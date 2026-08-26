@@ -29,6 +29,8 @@ export const WORD_BANK: readonly Category[] = [
       { word: 'Scene Contra', hint: 'Trouble' },
       { word: 'Maggi', hint: 'Food' },
       { word: 'Friends', hint: 'Relations' },
+      { word: 'Iron Box', hint: 'Thenju' },
+      { word: 'BoChe', hint: 'Udaayip' },
     ],
   },
 ];
