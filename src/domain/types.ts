@@ -18,17 +18,25 @@ export interface Category {
 export interface GameSettings {
   readonly imposterSeesCategory: boolean;
   readonly imposterGetsHint: boolean;
+  /** Only takes effect with enough players — see `MIN_PLAYERS_FOR_TWO_IMPOSTERS`. */
+  readonly twoImposters: boolean;
 }
 
 export type PlayerRole =
   | { readonly kind: 'civilian'; readonly word: string }
-  | { readonly kind: 'imposter'; readonly hint: string | null; readonly category: string | null };
+  | {
+      readonly kind: 'imposter';
+      readonly hint: string | null;
+      readonly category: string | null;
+      /** The other imposter this round, when there are two. */
+      readonly teammateId: string | null;
+    };
 
 export interface RoundAssignment {
   readonly categoryId: string;
   readonly categoryName: string;
   readonly secretWord: string;
-  readonly imposterId: string;
+  readonly imposterIds: readonly string[];
   readonly roles: ReadonlyMap<string, PlayerRole>;
 }
 
@@ -39,6 +47,6 @@ export interface VoteTally {
 
 export interface RoundOutcome {
   readonly votedOutId: string | null;
-  readonly imposterId: string;
+  readonly imposterIds: readonly string[];
   readonly imposterCaught: boolean;
 }

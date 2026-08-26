@@ -40,6 +40,7 @@ interface GameState {
   toggleCategory(id: string): void;
   toggleImposterSeesCategory(): void;
   toggleImposterGetsHint(): void;
+  toggleTwoImposters(): void;
 
   startGame(): void;
   markRevealed(playerId: string): void;
@@ -61,7 +62,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   phase: 'setup',
   players: createDefaultPlayers(),
   selectedCategoryIds: DEFAULT_SELECTED_CATEGORY_IDS,
-  settings: { imposterSeesCategory: false, imposterGetsHint: true },
+  settings: { imposterSeesCategory: false, imposterGetsHint: true, twoImposters: false },
   round: null,
   revealedPlayerIds: new Set(),
   votes: [],
@@ -98,6 +99,9 @@ export const useGameStore = create<GameState>((set, get) => ({
   toggleImposterGetsHint: () =>
     set((state) => ({ settings: { ...state.settings, imposterGetsHint: !state.settings.imposterGetsHint } })),
 
+  toggleTwoImposters: () =>
+    set((state) => ({ settings: { ...state.settings, twoImposters: !state.settings.twoImposters } })),
+
   startGame: () => {
     const { players, selectedCategoryIds, settings } = get();
     const round = assignRound({
@@ -129,14 +133,14 @@ export const useGameStore = create<GameState>((set, get) => ({
     if (!round) return;
     const [topResult] = tallyVotes(players, votes);
     const votedOutId = topResult && topResult.votes > 0 ? topResult.playerId : null;
-    set({ outcome: determineOutcome(votedOutId, round.imposterId), phase: 'result' });
+    set({ outcome: determineOutcome(votedOutId, round.imposterIds), phase: 'result' });
   },
 
   skipVotingWithOutcome: (imposterCaught) => {
     const { round } = get();
     if (!round) return;
     set({
-      outcome: { votedOutId: imposterCaught ? round.imposterId : null, imposterId: round.imposterId, imposterCaught },
+      outcome: { votedOutId: null, imposterIds: round.imposterIds, imposterCaught },
       phase: 'result',
     });
   },

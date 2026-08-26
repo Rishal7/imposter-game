@@ -8,6 +8,11 @@ import { tallyVotes } from '@/domain/gameEngine';
 import { cn } from '@/lib/cn';
 import { getPlayerDisplayName, useGameStore } from '@/store/useGameStore';
 
+function joinNames(names: readonly string[]): string {
+  if (names.length <= 1) return names[0] ?? '';
+  return `${names.slice(0, -1).join(', ')} & ${names[names.length - 1]}`;
+}
+
 export function ResultPage() {
   const [stage, setStage] = useState<'imposter' | 'full'>('imposter');
 
@@ -20,9 +25,12 @@ export function ResultPage() {
 
   if (!round || !outcome) return null;
 
-  const imposterIndex = players.findIndex((player) => player.id === outcome.imposterId);
-  const imposter = players[imposterIndex];
-  const imposterName = getPlayerDisplayName(imposter, imposterIndex);
+  const imposterNames = outcome.imposterIds.map((id) => {
+    const index = players.findIndex((player) => player.id === id);
+    return getPlayerDisplayName(players[index], index);
+  });
+  const imposterLabel = joinNames(imposterNames);
+  const isPlural = imposterNames.length > 1;
   const won = outcome.imposterCaught;
   const votedOutName =
     outcome.votedOutId !== null
@@ -44,9 +52,11 @@ export function ResultPage() {
         }
       >
         <div className="flex h-full flex-col items-center justify-center gap-3 bg-danger px-8 text-center">
-          <div className="text-sm font-bold text-bg/60 uppercase tracking-widest">The imposter was</div>
-          <div className="font-display text-[13vw] leading-[0.95] font-extrabold text-bg sm:text-6xl">
-            {imposterName}
+          <div className="text-sm font-bold text-bg/60 uppercase tracking-widest">
+            {isPlural ? 'The imposters were' : 'The imposter was'}
+          </div>
+          <div className="font-display text-4xl leading-[0.95] font-extrabold break-words text-bg sm:text-5xl">
+            {imposterLabel}
           </div>
         </div>
       </ScreenLayout>
@@ -77,10 +87,10 @@ export function ResultPage() {
           </h1>
           <p className="mt-1 text-[13px] leading-relaxed text-text-dim">
             {won
-              ? `${imposterName} was the imposter — the crew sniffed them out.`
+              ? `${imposterLabel} ${isPlural ? 'were the imposters' : 'was the imposter'} — the crew sniffed them out.`
               : outcome.votedOutId !== null
-                ? `${votedOutName} wasn't the imposter. ${imposterName} slipped away this round.`
-                : `${imposterName} slipped away this round.`}
+                ? `${votedOutName} wasn't the imposter. ${imposterLabel} slipped away this round.`
+                : `${imposterLabel} slipped away this round.`}
           </p>
         </div>
 

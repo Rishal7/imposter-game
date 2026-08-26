@@ -11,12 +11,14 @@ interface PeekModalProps {
   name: string;
   role: PlayerRole;
   categoryName: string;
+  /** The other imposter's display name, when this round has two. */
+  teammateName?: string | null;
   /** Called on any close. `viewed` is true once they've actually revealed the word. */
   onClose: (viewed: boolean) => void;
 }
 
 /** The reveal as a popup over the player list — no page navigation involved. */
-export function PeekModal({ name, role, categoryName, onClose }: PeekModalProps) {
+export function PeekModal({ name, role, categoryName, teammateName, onClose }: PeekModalProps) {
   const [revealed, setRevealed] = useState(false);
 
   return (
@@ -29,7 +31,13 @@ export function PeekModal({ name, role, categoryName, onClose }: PeekModalProps)
       </div>
 
       <div className="cut cut-lg h-[60dvh] max-h-[460px] w-full max-w-sm border border-line/20">
-        <RevealFlood role={role} categoryName={categoryName} revealed={revealed} onReveal={() => setRevealed(true)} />
+        <RevealFlood
+          role={role}
+          categoryName={categoryName}
+          teammateName={teammateName}
+          revealed={revealed}
+          onReveal={() => setRevealed(true)}
+        />
       </div>
 
       <div className={cn('w-full max-w-sm', !revealed && 'invisible')}>

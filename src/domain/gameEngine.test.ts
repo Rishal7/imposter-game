@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { assignRound, determineOutcome, tallyVotes } from './gameEngine';
 import type { RandomSource } from './random';
-import type { Player } from './types';
+import type { GameSettings, Player } from './types';
 import { StaticWordProvider } from './wordProvider';
 
 /** Replays a fixed sequence of `nextInt` results so tests are deterministic. */
@@ -21,10 +21,18 @@ class SequenceRandomSource implements RandomSource {
   }
 }
 
+const baseSettings: GameSettings = { imposterSeesCategory: false, imposterGetsHint: false, twoImposters: false };
+
 const players: Player[] = [
   { id: 'p1', name: 'Aiden' },
   { id: 'p2', name: 'Meera' },
   { id: 'p3', name: 'Rohan' },
+];
+
+const fivePlayers: Player[] = [
+  ...players,
+  { id: 'p4', name: 'Divya' },
+  { id: 'p5', name: 'Kiran' },
 ];
 
 const wordProvider = new StaticWordProvider([
@@ -45,7 +53,7 @@ describe('assignRound', () => {
     const round = assignRound({
       players,
       categoryIds: ['food'],
-      settings: { imposterSeesCategory: false, imposterGetsHint: false },
+      settings: baseSettings,
       wordProvider,
       random,
     });
@@ -54,6 +62,7 @@ describe('assignRound', () => {
     const imposters = roles.filter((role) => role.kind === 'imposter');
     const civilians = roles.filter((role) => role.kind === 'civilian');
 
+    expect(round.imposterIds).toHaveLength(1);
     expect(imposters).toHaveLength(1);
     expect(civilians).toHaveLength(players.length - 1);
     expect(civilians.every((role) => role.kind === 'civilian' && role.word === round.secretWord)).toBe(true);
@@ -64,13 +73,13 @@ describe('assignRound', () => {
     const round = assignRound({
       players,
       categoryIds: ['food'],
-      settings: { imposterSeesCategory: false, imposterGetsHint: false },
+      settings: baseSettings,
       wordProvider,
       random,
     });
 
-    const imposterRole = round.roles.get(round.imposterId);
-    expect(imposterRole).toEqual({ kind: 'imposter', hint: null, category: null });
+    const imposterRole = round.roles.get(round.imposterIds[0]);
+    expect(imposterRole).toEqual({ kind: 'imposter', hint: null, category: null, teammateId: null });
   });
 
   it("gives the imposter that word's authored hint when enabled", () => {
@@ -78,13 +87,13 @@ describe('assignRound', () => {
     const round = assignRound({
       players,
       categoryIds: ['food'],
-      settings: { imposterSeesCategory: true, imposterGetsHint: true },
+      settings: { ...baseSettings, imposterSeesCategory: true, imposterGetsHint: true },
       wordProvider,
       random,
     });
 
     const drawnEntry = wordProvider.getCategories()[0].words.find((entry) => entry.word === round.secretWord);
-    const imposterRole = round.roles.get(round.imposterId);
+    const imposterRole = round.roles.get(round.imposterIds[0]);
     expect(imposterRole?.kind).toBe('imposter');
     if (imposterRole?.kind === 'imposter') {
       expect(imposterRole.hint).toBe(drawnEntry?.hint);
@@ -98,11 +107,56 @@ describe('assignRound', () => {
       assignRound({
         players: players.slice(0, 2),
         categoryIds: ['food'],
-        settings: { imposterSeesCategory: false, imposterGetsHint: false },
+        settings: baseSettings,
         wordProvider,
         random,
       }),
     ).toThrow();
+  });
+
+  it('picks two distinct imposters who each know the other when enabled with enough players', () => {
+    const random = new SequenceRandomSource([0, 1, 2]);
+    const round = assignRound({
+      players: fivePlayers,
+      categoryIds: ['food'],
+      settings: { ...baseSettings, twoImposters: true },
+      wordProvider,
+      random,
+    });
+
+    expect(round.imposterIds).toHaveLength(2);
+    const [firstId, secondId] = round.imposterIds;
+    expect(firstId).not.toBe(secondId);
+
+    const firstRole = round.roles.get(firstId);
+    const secondRole = round.roles.get(secondId);
+    expect(firstRole?.kind).toBe('imposter');
+    expect(secondRole?.kind).toBe('imposter');
+    if (firstRole?.kind === 'imposter' && secondRole?.kind === 'imposter') {
+      expect(firstRole.teammateId).toBe(secondId);
+      expect(secondRole.teammateId).toBe(firstId);
+    }
+
+    const civilianCount = [...round.roles.values()].filter((role) => role.kind === 'civilian').length;
+    expect(civilianCount).toBe(fivePlayers.length - 2);
+  });
+
+  it('stays at one imposter when twoImposters is enabled but there are too few players', () => {
+    const random = new SequenceRandomSource([0, 0, 1]);
+    const round = assignRound({
+      players,
+      categoryIds: ['food'],
+      settings: { ...baseSettings, twoImposters: true },
+      wordProvider,
+      random,
+    });
+
+    expect(round.imposterIds).toHaveLength(1);
+    const imposterRole = round.roles.get(round.imposterIds[0]);
+    expect(imposterRole?.kind).toBe('imposter');
+    if (imposterRole?.kind === 'imposter') {
+      expect(imposterRole.teammateId).toBeNull();
+    }
   });
 });
 
@@ -122,9 +176,10 @@ describe('tallyVotes', () => {
 });
 
 describe('determineOutcome', () => {
-  it('reports the imposter as caught only when votes match', () => {
-    expect(determineOutcome('p3', 'p3').imposterCaught).toBe(true);
-    expect(determineOutcome('p1', 'p3').imposterCaught).toBe(false);
-    expect(determineOutcome(null, 'p3').imposterCaught).toBe(false);
+  it('reports the imposter as caught only when the voted-out player is one of the imposters', () => {
+    expect(determineOutcome('p3', ['p3']).imposterCaught).toBe(true);
+    expect(determineOutcome('p1', ['p3']).imposterCaught).toBe(false);
+    expect(determineOutcome(null, ['p3']).imposterCaught).toBe(false);
+    expect(determineOutcome('p2', ['p1', 'p2']).imposterCaught).toBe(true);
   });
 });

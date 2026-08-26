@@ -19,9 +19,15 @@ export function RevealPage() {
 
   const allRevealed = players.every((player) => revealedPlayerIds.has(player.id));
 
+  const nameForId = (playerId: string): string | null => {
+    const index = players.findIndex((player) => player.id === playerId);
+    return index >= 0 ? getPlayerDisplayName(players[index], index) : null;
+  };
+
   const activeIndex = activePlayerId ? players.findIndex((player) => player.id === activePlayerId) : -1;
   const activePlayer = activeIndex >= 0 ? players[activeIndex] : null;
   const activeRole = activePlayerId ? round.roles.get(activePlayerId) : undefined;
+  const teammateName = activeRole?.kind === 'imposter' && activeRole.teammateId ? nameForId(activeRole.teammateId) : null;
 
   return (
     <ScreenLayout
@@ -58,6 +64,7 @@ export function RevealPage() {
           name={getPlayerDisplayName(activePlayer, activeIndex)}
           role={activeRole}
           categoryName={round.categoryName}
+          teammateName={teammateName}
           onClose={(viewed) => {
             if (viewed) markRevealed(activePlayer.id);
             setActivePlayerId(null);
