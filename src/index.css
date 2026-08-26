@@ -26,6 +26,13 @@
     overscroll-behavior-y: none;
   }
 
+  /* Installed home-screen app only — blocks pinch-zoom while still
+     allowing normal scrolling. Left untouched in a regular browser tab. */
+  html.standalone-pwa,
+  html.standalone-pwa body {
+    touch-action: pan-x pan-y;
+  }
+
   #root {
     @apply min-h-dvh;
   }
