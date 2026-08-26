@@ -141,6 +141,35 @@ describe('assignRound', () => {
     expect(civilianCount).toBe(fivePlayers.length - 2);
   });
 
+  it('steers away from a recently used word when the category has alternatives', () => {
+    const random = new SequenceRandomSource([0, 0, 1]);
+    const round = assignRound({
+      players,
+      categoryIds: ['food'],
+      settings: baseSettings,
+      wordProvider,
+      random,
+      excludeWords: new Set(['Pizza']),
+    });
+
+    expect(round.secretWord).not.toBe('Pizza');
+  });
+
+  it('falls back to repeating a word when every option in the category is excluded', () => {
+    const tinyProvider = new StaticWordProvider([{ id: 'mini', name: 'Mini', words: [{ word: 'Only', hint: 'One' }] }]);
+    const random = new SequenceRandomSource([0, 0]);
+    const round = assignRound({
+      players,
+      categoryIds: ['mini'],
+      settings: baseSettings,
+      wordProvider: tinyProvider,
+      random,
+      excludeWords: new Set(['Only']),
+    });
+
+    expect(round.secretWord).toBe('Only');
+  });
+
   it('stays at one imposter when twoImposters is enabled but there are too few players', () => {
     const random = new SequenceRandomSource([0, 0, 1]);
     const round = assignRound({

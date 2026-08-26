@@ -1,4 +1,4 @@
-import { XIcon } from '@/components/icons';
+import { EditIcon, XIcon } from '@/components/icons';
 import { cn } from '@/lib/cn';
 
 interface CategoryTileProps {
@@ -6,10 +6,11 @@ interface CategoryTileProps {
   wordCount: number;
   selected: boolean;
   onToggle: () => void;
+  onEdit?: () => void;
   onRemove?: () => void;
 }
 
-export function CategoryTile({ name, wordCount, selected, onToggle, onRemove }: CategoryTileProps) {
+export function CategoryTile({ name, wordCount, selected, onToggle, onEdit, onRemove }: CategoryTileProps) {
   return (
     <span
       className={cn(
@@ -21,6 +22,16 @@ export function CategoryTile({ name, wordCount, selected, onToggle, onRemove }: 
         <span className="text-[13px] font-bold">{name}</span>
         <span className="text-[11px] opacity-70">· {wordCount}</span>
       </button>
+      {onEdit ? (
+        <button
+          type="button"
+          onClick={onEdit}
+          aria-label={`Edit ${name} pack`}
+          className="flex h-5 w-5 items-center justify-center opacity-60"
+        >
+          <EditIcon width={12} height={12} />
+        </button>
+      ) : null}
       {onRemove ? (
         <button
           type="button"

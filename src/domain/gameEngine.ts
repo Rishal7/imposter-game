@@ -14,6 +14,8 @@ export interface AssignRoundParams {
   readonly settings: GameSettings;
   readonly wordProvider: WordProvider;
   readonly random: RandomSource;
+  /** Secret words to steer away from repeating — e.g. the last round or two. */
+  readonly excludeWords?: ReadonlySet<string>;
 }
 
 /**
@@ -23,13 +25,13 @@ export interface AssignRoundParams {
  * be unit tested without mocking modules.
  */
 export function assignRound(params: AssignRoundParams): RoundAssignment {
-  const { players, categoryIds, settings, wordProvider, random } = params;
+  const { players, categoryIds, settings, wordProvider, random, excludeWords } = params;
 
   if (players.length < MIN_PLAYERS) {
     throw new Error(`A round needs at least ${MIN_PLAYERS} players.`);
   }
 
-  const { category, entry } = wordProvider.pickSecretWord(categoryIds, random);
+  const { category, entry } = wordProvider.pickSecretWord(categoryIds, random, excludeWords);
   const word = entry.word;
   const hintWord = settings.imposterGetsHint ? entry.hint : null;
   const categoryForImposter = settings.imposterSeesCategory ? category.name : null;

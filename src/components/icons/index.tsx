@@ -81,6 +81,21 @@ export function XIcon(props: IconProps) {
   );
 }
 
+export function EditIcon(props: IconProps) {
+  return (
+    <svg {...withDefaults(props)}>
+      <path
+        d="M4 20l.9-3.6a2 2 0 0 1 .53-.94L15.6 5.3a1.7 1.7 0 0 1 2.4 0l.7.7a1.7 1.7 0 0 1 0 2.4L8.54 18.57a2 2 0 0 1-.94.53L4 20Z"
+        stroke="currentColor"
+        strokeWidth={1.6}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M13.5 7.5l3 3" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function ShareIcon(props: IconProps) {
   return (
     <svg {...withDefaults(props)}>

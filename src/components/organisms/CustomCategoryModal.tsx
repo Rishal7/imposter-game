@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Button } from '@/components/atoms/Button';
 import { PlusIcon, XIcon } from '@/components/icons';
 import { WordPairRow } from '@/components/molecules/WordPairRow';
-import type { WordEntry } from '@/domain/types';
+import type { Category, WordEntry } from '@/domain/types';
 
 interface DraftRow {
   word: string;
@@ -11,15 +11,20 @@ interface DraftRow {
 }
 
 interface CustomCategoryModalProps {
+  /** When set, the modal edits this pack in place instead of creating a new one. */
+  initialCategory?: Category;
   onSave: (name: string, words: readonly WordEntry[]) => void;
   onClose: () => void;
 }
 
 const emptyRow = (): DraftRow => ({ word: '', hint: '' });
 
-export function CustomCategoryModal({ onSave, onClose }: CustomCategoryModalProps) {
-  const [name, setName] = useState('');
-  const [rows, setRows] = useState<DraftRow[]>([emptyRow(), emptyRow()]);
+export function CustomCategoryModal({ initialCategory, onSave, onClose }: CustomCategoryModalProps) {
+  const isEditing = initialCategory !== undefined;
+  const [name, setName] = useState(initialCategory?.name ?? '');
+  const [rows, setRows] = useState<DraftRow[]>(
+    initialCategory ? initialCategory.words.map((entry) => ({ ...entry })) : [emptyRow(), emptyRow()],
+  );
 
   const validWords: WordEntry[] = rows
     .map((row) => ({ word: row.word.trim(), hint: row.hint.trim() }))
@@ -34,7 +39,9 @@ export function CustomCategoryModal({ onSave, onClose }: CustomCategoryModalProp
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-bg/96 backdrop-blur-sm">
       <div className="flex items-center justify-between px-6 pt-6 pb-2">
-        <span className="font-display text-xs font-bold uppercase tracking-widest text-text-dim">New word pack</span>
+        <span className="font-display text-xs font-bold uppercase tracking-widest text-text-dim">
+          {isEditing ? 'Edit word pack' : 'New word pack'}
+        </span>
         <button type="button" onClick={onClose} aria-label="Close" className="p-1 text-text-dim">
           <XIcon width={16} height={16} strokeWidth={2.4} />
         </button>
@@ -82,7 +89,7 @@ export function CustomCategoryModal({ onSave, onClose }: CustomCategoryModalProp
             onClose();
           }}
         >
-          Save pack
+          {isEditing ? 'Save changes' : 'Save pack'}
         </Button>
       </div>
     </div>

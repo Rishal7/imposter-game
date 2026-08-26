@@ -15,6 +15,8 @@ const random = new MathRandomSource();
 
 const CATEGORIES = new StaticWordProvider().getCategories();
 const DEFAULT_SELECTED_CATEGORY_IDS = CATEGORIES.slice(0, 3).map((category) => category.id);
+/** How many past secret words a new round steers away from repeating. */
+const RECENT_WORDS_LIMIT = 3;
 
 let nextPlayerId = 0;
 const createPlayerId = (): string => `player-${(nextPlayerId += 1)}`;
@@ -47,12 +49,15 @@ interface GameState {
   readonly votes: readonly Vote[];
   readonly voteView: VoteView;
   readonly outcome: RoundOutcome | null;
+  /** The last few secret words drawn, so a new round can steer away from repeats. Not persisted. */
+  readonly recentWords: readonly string[];
 
   addPlayer(): void;
   removePlayer(id: string): void;
   renamePlayer(id: string, name: string): void;
   toggleCategory(id: string): void;
   addCustomCategory(name: string, words: readonly WordEntry[]): void;
+  updateCustomCategory(id: string, name: string, words: readonly WordEntry[]): void;
   removeCustomCategory(id: string): void;
   toggleImposterSeesCategory(): void;
   toggleImposterGetsHint(): void;
@@ -85,6 +90,7 @@ const createGameState: StateCreator<GameState> = (set, get) => ({
   votes: [],
   voteView: 'ballot',
   outcome: null,
+  recentWords: [],
 
   addPlayer: () =>
     set((state) => {
@@ -119,6 +125,13 @@ const createGameState: StateCreator<GameState> = (set, get) => ({
       };
     }),
 
+  updateCustomCategory: (id, name, words) =>
+    set((state) => ({
+      customCategories: state.customCategories.map((category) =>
+        category.id === id ? { ...category, name: name.trim(), words } : category,
+      ),
+    })),
+
   removeCustomCategory: (id) =>
     set((state) => ({
       customCategories: state.customCategories.filter((category) => category.id !== id),
@@ -135,7 +148,7 @@ const createGameState: StateCreator<GameState> = (set, get) => ({
     set((state) => ({ settings: { ...state.settings, twoImposters: !state.settings.twoImposters } })),
 
   startGame: () => {
-    const { players, selectedCategoryIds, customCategories, settings } = get();
+    const { players, selectedCategoryIds, customCategories, settings, recentWords } = get();
     const wordProvider = new StaticWordProvider([...CATEGORIES, ...customCategories]);
     const round = assignRound({
       players,
@@ -143,8 +156,17 @@ const createGameState: StateCreator<GameState> = (set, get) => ({
       settings,
       wordProvider,
       random,
+      excludeWords: new Set(recentWords),
     });
-    set({ phase: 'reveal', round, revealedPlayerIds: new Set(), votes: [], voteView: 'ballot', outcome: null });
+    set({
+      phase: 'reveal',
+      round,
+      revealedPlayerIds: new Set(),
+      votes: [],
+      voteView: 'ballot',
+      outcome: null,
+      recentWords: [...recentWords, round.secretWord].slice(-RECENT_WORDS_LIMIT),
+    });
   },
 
   markRevealed: (playerId) =>

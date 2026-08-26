@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { BrandMark } from '@/components/atoms/BrandMark';
 import { Button } from '@/components/atoms/Button';
 import { ArrowRightIcon, DownloadIcon, InfoIcon, PlayIcon, ShareIcon } from '@/components/icons';
+import { ConfirmDialog } from '@/components/molecules/ConfirmDialog';
 import { InstallNudge } from '@/components/molecules/InstallNudge';
 import { SettingToggle } from '@/components/molecules/SettingToggle';
 import { CategoryPicker } from '@/components/organisms/CategoryPicker';
@@ -11,6 +12,7 @@ import { HowToPlayModal } from '@/components/organisms/HowToPlayModal';
 import { PlayerListEditor } from '@/components/organisms/PlayerListEditor';
 import { ScreenLayout } from '@/components/templates/ScreenLayout';
 import { MAX_PLAYERS, MIN_PLAYERS, MIN_PLAYERS_FOR_TWO_IMPOSTERS } from '@/domain/gameEngine';
+import type { Category } from '@/domain/types';
 import {
   dismissAndroidInstallNudge,
   onAndroidInstallPromptChange,
@@ -27,9 +29,12 @@ const STEPS = [
   { step: 2, label: 'Rules' },
 ] as const;
 
+type CategoryModalState = { mode: 'create' } | { mode: 'edit'; category: Category };
+
 export function SetupPage() {
   const [step, setStep] = useState<1 | 2>(1);
-  const [creatingCategory, setCreatingCategory] = useState(false);
+  const [categoryModal, setCategoryModal] = useState<CategoryModalState | null>(null);
+  const [deletingCategoryId, setDeletingCategoryId] = useState<string | null>(null);
   const [showIosInstallNudge, setShowIosInstallNudge] = useState(() => shouldShowIosInstallNudge());
   const [showAndroidInstallNudge, setShowAndroidInstallNudge] = useState(() => shouldShowAndroidInstallNudge());
   const [showHowToPlay, setShowHowToPlay] = useState(() => !hasSeenHowToPlay());
@@ -48,6 +53,7 @@ export function SetupPage() {
   const renamePlayer = useGameStore((state) => state.renamePlayer);
   const toggleCategory = useGameStore((state) => state.toggleCategory);
   const addCustomCategory = useGameStore((state) => state.addCustomCategory);
+  const updateCustomCategory = useGameStore((state) => state.updateCustomCategory);
   const removeCustomCategory = useGameStore((state) => state.removeCustomCategory);
   const toggleImposterSeesCategory = useGameStore((state) => state.toggleImposterSeesCategory);
   const toggleImposterGetsHint = useGameStore((state) => state.toggleImposterGetsHint);
@@ -177,8 +183,12 @@ export function SetupPage() {
             selectedIds={selectedCategoryIds}
             customCategoryIds={customCategoryIds}
             onToggleCategory={toggleCategory}
-            onRemoveCategory={removeCustomCategory}
-            onCreateCategory={() => setCreatingCategory(true)}
+            onEditCategory={(id) => {
+              const category = customCategories.find((item) => item.id === id);
+              if (category) setCategoryModal({ mode: 'edit', category });
+            }}
+            onRemoveCategory={setDeletingCategoryId}
+            onCreateCategory={() => setCategoryModal({ mode: 'create' })}
           />
 
           <div className="flex flex-col">
@@ -210,8 +220,31 @@ export function SetupPage() {
         </div>
       )}
 
-      {creatingCategory ? (
-        <CustomCategoryModal onSave={addCustomCategory} onClose={() => setCreatingCategory(false)} />
+      {categoryModal ? (
+        <CustomCategoryModal
+          initialCategory={categoryModal.mode === 'edit' ? categoryModal.category : undefined}
+          onSave={(name, words) => {
+            if (categoryModal.mode === 'edit') {
+              updateCustomCategory(categoryModal.category.id, name, words);
+            } else {
+              addCustomCategory(name, words);
+            }
+          }}
+          onClose={() => setCategoryModal(null)}
+        />
+      ) : null}
+
+      {deletingCategoryId ? (
+        <ConfirmDialog
+          title="Delete this pack?"
+          message={`“${customCategories.find((category) => category.id === deletingCategoryId)?.name ?? 'This pack'}” and its words will be gone for good.`}
+          confirmLabel="Delete pack"
+          onConfirm={() => {
+            removeCustomCategory(deletingCategoryId);
+            setDeletingCategoryId(null);
+          }}
+          onCancel={() => setDeletingCategoryId(null)}
+        />
       ) : null}
 
       {showHowToPlay ? (

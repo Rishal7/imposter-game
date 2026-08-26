@@ -7,6 +7,7 @@ interface CategoryPickerProps {
   selectedIds: readonly string[];
   customCategoryIds: readonly string[];
   onToggleCategory: (id: string) => void;
+  onEditCategory: (id: string) => void;
   onRemoveCategory: (id: string) => void;
   onCreateCategory: () => void;
 }
@@ -16,21 +17,26 @@ export function CategoryPicker({
   selectedIds,
   customCategoryIds,
   onToggleCategory,
+  onEditCategory,
   onRemoveCategory,
   onCreateCategory,
 }: CategoryPickerProps) {
   return (
     <div className="flex flex-wrap gap-2">
-      {categories.map((category) => (
-        <CategoryTile
-          key={category.id}
-          name={category.name}
-          wordCount={category.words.length}
-          selected={selectedIds.includes(category.id)}
-          onToggle={() => onToggleCategory(category.id)}
-          onRemove={customCategoryIds.includes(category.id) ? () => onRemoveCategory(category.id) : undefined}
-        />
-      ))}
+      {categories.map((category) => {
+        const isCustom = customCategoryIds.includes(category.id);
+        return (
+          <CategoryTile
+            key={category.id}
+            name={category.name}
+            wordCount={category.words.length}
+            selected={selectedIds.includes(category.id)}
+            onToggle={() => onToggleCategory(category.id)}
+            onEdit={isCustom ? () => onEditCategory(category.id) : undefined}
+            onRemove={isCustom ? () => onRemoveCategory(category.id) : undefined}
+          />
+        );
+      })}
       <button
         type="button"
         onClick={onCreateCategory}
