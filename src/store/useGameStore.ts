@@ -6,7 +6,7 @@ import { assignRound, determineOutcome, MAX_PLAYERS, MIN_PLAYERS, tallyVotes, ty
 import { MathRandomSource } from '@/domain/random';
 import type { Category, GameSettings, Player, RoundAssignment, RoundOutcome, WordEntry } from '@/domain/types';
 import { StaticWordProvider } from '@/domain/wordProvider';
-import { CUSTOM_CATEGORIES_STORAGE_KEY, customCategoriesStorage } from '@/lib/customCategoryStorage';
+import { DEFAULT_SETTINGS, GAME_PERSIST_NAME, gameStorage } from '@/lib/gameStorage';
 
 export type GamePhase = 'setup' | 'reveal' | 'discuss' | 'vote' | 'result';
 export type VoteView = 'ballot' | 'honor';
@@ -68,7 +68,7 @@ const createGameState: StateCreator<GameState> = (set, get) => ({
   players: createDefaultPlayers(),
   selectedCategoryIds: DEFAULT_SELECTED_CATEGORY_IDS,
   customCategories: [],
-  settings: { imposterSeesCategory: false, imposterGetsHint: true, twoImposters: false },
+  settings: DEFAULT_SETTINGS,
   round: null,
   revealedPlayerIds: new Set(),
   votes: [],
@@ -173,15 +173,19 @@ const createGameState: StateCreator<GameState> = (set, get) => ({
 });
 
 /**
- * Custom word packs are the only slice that should survive a reload —
- * players, round, and votes intentionally reset every session. `persist`
- * hydrates that slice from localStorage synchronously before first render.
+ * Custom word packs and rule settings are the only slices that should
+ * survive a reload — players, round, and votes intentionally reset every
+ * session. `persist` hydrates them from localStorage synchronously before
+ * first render.
  */
 export const useGameStore = create<GameState>()(
   persist(createGameState, {
-    name: CUSTOM_CATEGORIES_STORAGE_KEY,
-    storage: customCategoriesStorage,
-    partialize: (state) => ({ customCategories: state.customCategories as Category[] }),
+    name: GAME_PERSIST_NAME,
+    storage: gameStorage,
+    partialize: (state) => ({
+      customCategories: state.customCategories as Category[],
+      settings: state.settings,
+    }),
   }),
 );
 

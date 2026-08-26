@@ -161,6 +161,16 @@ export function ArrowLeftIcon(props: IconProps) {
   );
 }
 
+export function InfoIcon(props: IconProps) {
+  return (
+    <svg {...withDefaults(props)}>
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth={1.7} />
+      <path d="M12 11v6" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" />
+      <circle cx="12" cy="7.7" r="1.1" fill="currentColor" />
+    </svg>
+  );
+}
+
 export function PlayIcon(props: IconProps) {
   return (
     <svg {...withDefaults(props)}>

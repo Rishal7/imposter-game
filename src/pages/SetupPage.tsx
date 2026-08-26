@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react';
 
 import { BrandMark } from '@/components/atoms/BrandMark';
 import { Button } from '@/components/atoms/Button';
-import { ArrowRightIcon, DownloadIcon, PlayIcon, ShareIcon } from '@/components/icons';
+import { ArrowRightIcon, DownloadIcon, InfoIcon, PlayIcon, ShareIcon } from '@/components/icons';
 import { InstallNudge } from '@/components/molecules/InstallNudge';
 import { SettingToggle } from '@/components/molecules/SettingToggle';
 import { CategoryPicker } from '@/components/organisms/CategoryPicker';
 import { CustomCategoryModal } from '@/components/organisms/CustomCategoryModal';
+import { HowToPlayModal } from '@/components/organisms/HowToPlayModal';
 import { PlayerListEditor } from '@/components/organisms/PlayerListEditor';
 import { ScreenLayout } from '@/components/templates/ScreenLayout';
 import { MAX_PLAYERS, MIN_PLAYERS, MIN_PLAYERS_FOR_TWO_IMPOSTERS } from '@/domain/gameEngine';
@@ -17,6 +18,7 @@ import {
   triggerAndroidInstallPrompt,
 } from '@/lib/androidInstallPrompt';
 import { cn } from '@/lib/cn';
+import { hasSeenHowToPlay, markHowToPlaySeen } from '@/lib/howToPlay';
 import { dismissIosInstallNudge, shouldShowIosInstallNudge } from '@/lib/installNudge';
 import { useAllCategories, useGameStore } from '@/store/useGameStore';
 
@@ -30,6 +32,7 @@ export function SetupPage() {
   const [creatingCategory, setCreatingCategory] = useState(false);
   const [showIosInstallNudge, setShowIosInstallNudge] = useState(() => shouldShowIosInstallNudge());
   const [showAndroidInstallNudge, setShowAndroidInstallNudge] = useState(() => shouldShowAndroidInstallNudge());
+  const [showHowToPlay, setShowHowToPlay] = useState(() => !hasSeenHowToPlay());
 
   useEffect(
     () => onAndroidInstallPromptChange(() => setShowAndroidInstallNudge(shouldShowAndroidInstallNudge())),
@@ -59,9 +62,19 @@ export function SetupPage() {
     <ScreenLayout
       header={
         <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-2.5 px-6">
-            <BrandMark size={30} />
-            <div className="font-display text-sm font-extrabold tracking-wide">IMPOSTER</div>
+          <div className="flex items-center justify-between px-6">
+            <div className="flex items-center gap-2.5">
+              <BrandMark size={30} />
+              <div className="font-display text-sm font-extrabold tracking-wide">IMPOSTER</div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowHowToPlay(true)}
+              aria-label="How to play"
+              className="p-1 text-text-dim"
+            >
+              <InfoIcon width={20} height={20} />
+            </button>
           </div>
           <div className="flex px-6">
             {STEPS.map((s) => (
@@ -199,6 +212,15 @@ export function SetupPage() {
 
       {creatingCategory ? (
         <CustomCategoryModal onSave={addCustomCategory} onClose={() => setCreatingCategory(false)} />
+      ) : null}
+
+      {showHowToPlay ? (
+        <HowToPlayModal
+          onClose={() => {
+            markHowToPlaySeen();
+            setShowHowToPlay(false);
+          }}
+        />
       ) : null}
     </ScreenLayout>
   );
