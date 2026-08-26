@@ -20,13 +20,13 @@ export function WordPairRow({ index, word, hint, onChangeWord, onChangeHint, onR
         value={word}
         onChange={(event) => onChangeWord(event.target.value)}
         placeholder="Word"
-        className="min-w-0 flex-1 rounded-xl border border-line/25 bg-surface-2 px-3 py-2.5 text-sm font-semibold text-text placeholder:text-text-dim placeholder:font-medium focus:outline-2 focus:outline-amber"
+        className="min-w-0 flex-1 rounded-xl border border-line/25 bg-surface-2 px-3 py-2.5 text-base font-semibold text-text placeholder:text-text-dim placeholder:font-medium focus:outline-2 focus:outline-amber"
       />
       <input
         value={hint}
         onChange={(event) => onChangeHint(event.target.value)}
         placeholder="Hint"
-        className="min-w-0 flex-1 rounded-xl border border-line/25 bg-surface-2 px-3 py-2.5 text-sm text-text-dim placeholder:text-text-dim/70 focus:outline-2 focus:outline-amber"
+        className="min-w-0 flex-1 rounded-xl border border-line/25 bg-surface-2 px-3 py-2.5 text-base text-text-dim placeholder:text-text-dim/70 focus:outline-2 focus:outline-amber"
       />
       <button
         type="button"
