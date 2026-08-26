@@ -1,19 +1,19 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-bg: #0c0b10;
-  --color-surface: #18151f;
-  --color-surface-2: #221e2c;
-  --color-line: oklch(45% 0.02 270);
-  --color-text: oklch(96% 0.005 270);
-  --color-text-dim: oklch(63% 0.015 270);
-  --color-amber: oklch(75% 0.16 55);
-  --color-amber-ink: oklch(18% 0.03 55);
-  --color-red: oklch(64% 0.19 25);
-  --color-violet: oklch(68% 0.18 300);
+  --color-bg: oklch(13% 0.025 255);
+  --color-surface: oklch(19% 0.03 255);
+  --color-surface-2: oklch(24% 0.035 255);
+  --color-line: oklch(55% 0.03 255);
+  --color-text: oklch(97% 0.008 255);
+  --color-text-dim: oklch(65% 0.02 255);
+  --color-primary: oklch(78% 0.15 195);
+  --color-primary-ink: oklch(16% 0.03 195);
+  --color-danger: oklch(66% 0.22 345);
+  --color-accent: oklch(80% 0.19 130);
 
-  --font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
-  --font-body: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Unbounded', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Manrope', ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {
@@ -46,5 +46,25 @@
 
   .no-scrollbar::-webkit-scrollbar {
     display: none;
+  }
+
+  /* Signature shape: a diagonally cut corner instead of a rounded one —
+     the app's shape language, distinct from a rounded-card look. */
+  .cut {
+    --cut: 14px;
+    clip-path: polygon(
+      var(--cut) 0,
+      100% 0,
+      100% calc(100% - var(--cut)),
+      calc(100% - var(--cut)) 100%,
+      0 100%,
+      0 var(--cut)
+    );
+  }
+  .cut-sm {
+    --cut: 8px;
+  }
+  .cut-lg {
+    --cut: 24px;
   }
 }

@@ -16,7 +16,7 @@ interface AvatarProps {
   name: string;
   paletteIndex: number;
   size?: AvatarSize;
-  ring?: 'red' | 'none';
+  ring?: 'danger' | 'none';
   badge?: ReactNode;
   className?: string;
 }
@@ -28,9 +28,9 @@ export function Avatar({ name, paletteIndex, size = 'md', ring = 'none', badge, 
     <div className={cn('relative shrink-0', className)}>
       <div
         className={cn(
-          'flex items-center justify-center rounded-full font-display font-extrabold text-white',
+          'flex items-center justify-center rounded-[28%] font-display font-extrabold text-white',
           SIZE_CLASSES[size],
-          ring === 'red' && 'shadow-[0_0_0_4px_oklch(64%_0.19_25_/_16%)] ring-3 ring-red',
+          ring === 'danger' && 'shadow-[0_0_0_4px_oklch(66%_0.22_345_/_16%)] ring-3 ring-danger',
         )}
         style={{ backgroundImage: getAvatarGradient(paletteIndex) }}
       >

@@ -38,8 +38,6 @@ interface GameState {
   removePlayer(id: string): void;
   renamePlayer(id: string, name: string): void;
   toggleCategory(id: string): void;
-  selectAllCategories(): void;
-  clearAllCategories(): void;
   toggleImposterSeesCategory(): void;
   toggleImposterGetsHint(): void;
 
@@ -93,9 +91,6 @@ export const useGameStore = create<GameState>((set, get) => ({
         ? state.selectedCategoryIds.filter((categoryId) => categoryId !== id)
         : [...state.selectedCategoryIds, id],
     })),
-
-  selectAllCategories: () => set({ selectedCategoryIds: CATEGORIES.map((category) => category.id) }),
-  clearAllCategories: () => set({ selectedCategoryIds: [] }),
 
   toggleImposterSeesCategory: () =>
     set((state) => ({ settings: { ...state.settings, imposterSeesCategory: !state.settings.imposterSeesCategory } })),

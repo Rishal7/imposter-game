@@ -73,6 +73,14 @@ export function ChevronDownIcon(props: IconProps) {
   );
 }
 
+export function XIcon(props: IconProps) {
+  return (
+    <svg {...withDefaults(props)}>
+      <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth={2.6} strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function CheckIcon(props: IconProps) {
   return (
     <svg {...withDefaults(props)}>
@@ -107,6 +115,14 @@ export function ChatDotsIcon(props: IconProps) {
       <circle cx="8" cy="11.5" r="1" fill="currentColor" />
       <circle cx="12" cy="11.5" r="1" fill="currentColor" />
       <circle cx="16" cy="11.5" r="1" fill="currentColor" />
+    </svg>
+  );
+}
+
+export function ArrowRightIcon(props: IconProps) {
+  return (
+    <svg {...withDefaults(props)}>
+      <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }

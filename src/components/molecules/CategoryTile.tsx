@@ -13,12 +13,12 @@ export function CategoryTile({ name, wordCount, selected, onToggle }: CategoryTi
       type="button"
       onClick={onToggle}
       className={cn(
-        'flex flex-col gap-1.5 rounded-[14px] border px-3 py-3 text-left',
-        selected ? 'border-amber bg-amber/15' : 'border-line/25 bg-surface-2',
+        'cut-sm cut flex items-center gap-2 border px-4 py-2.5 text-left transition-colors',
+        selected ? 'border-primary bg-primary/15 text-primary' : 'border-line/25 bg-surface-2 text-text-dim',
       )}
     >
-      <span className="text-[13px] font-bold text-text">{name}</span>
-      <span className="text-[11px] text-text-dim">{wordCount} words</span>
+      <span className="text-[13px] font-bold">{name}</span>
+      <span className="text-[11px] opacity-70">· {wordCount}</span>
     </button>
   );
 }

@@ -1,5 +1,4 @@
-import { Card } from '@/components/atoms/Card';
-import { PlusIcon, UsersIcon } from '@/components/icons';
+import { PlusIcon } from '@/components/icons';
 import { PlayerRow } from '@/components/molecules/PlayerRow';
 import type { Player } from '@/domain/types';
 
@@ -16,17 +15,7 @@ export function PlayerListEditor({ players, minPlayers, maxPlayers, onRename, on
   const canAdd = players.length < maxPlayers;
 
   return (
-    <Card>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-sm font-bold text-text">
-          <UsersIcon width={16} height={16} className="text-text-dim" />
-          Players
-        </div>
-        <div className="text-[13px] text-text-dim">
-          {players.length} / {maxPlayers}
-        </div>
-      </div>
-
+    <div className="flex flex-col">
       {players.map((player, index) => (
         <PlayerRow
           key={player.id}
@@ -42,12 +31,12 @@ export function PlayerListEditor({ players, minPlayers, maxPlayers, onRename, on
         <button
           type="button"
           onClick={onAdd}
-          className="flex items-center justify-center gap-2 rounded-xl border border-line/25 bg-surface-2 py-3 text-[13px] font-semibold text-text-dim"
+          className="flex items-center gap-2 py-4 text-[13px] font-bold uppercase tracking-wide text-primary"
         >
-          <PlusIcon width={15} height={15} />
-          Add Player
+          <PlusIcon width={14} height={14} strokeWidth={2.4} />
+          Add another
         </button>
       ) : null}
-    </Card>
+    </div>
   );
 }

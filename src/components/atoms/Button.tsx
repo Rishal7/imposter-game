@@ -9,18 +9,16 @@ interface ButtonProps extends ComponentPropsWithRef<'button'> {
 }
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
-  primary:
-    'bg-amber text-amber-ink shadow-[0_12px_24px_-12px_oklch(75%_0.16_55_/_55%)] disabled:bg-surface-2 disabled:text-text-dim disabled:shadow-none',
-  danger:
-    'bg-red text-amber-ink shadow-[0_12px_24px_-12px_oklch(64%_0.19_25_/_50%)] disabled:bg-surface-2 disabled:text-text-dim disabled:shadow-none',
-  ghost: 'border border-line/25 bg-surface-2 text-text',
+  primary: 'bg-primary text-primary-ink disabled:bg-surface-2 disabled:text-text-dim',
+  danger: 'bg-danger text-primary-ink disabled:bg-surface-2 disabled:text-text-dim',
+  ghost: 'bg-transparent text-text ring-1 ring-inset ring-line/40',
 };
 
 export function Button({ variant = 'primary', className, ...rest }: ButtonProps) {
   return (
     <button
       className={cn(
-        'flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-4 font-display text-base font-bold transition active:opacity-85 disabled:cursor-default',
+        'cut flex w-full items-center justify-center gap-2 px-5 py-4 font-display text-sm font-bold uppercase tracking-wide transition active:translate-y-0.5 disabled:cursor-default disabled:active:translate-y-0',
         VARIANT_CLASSES[variant],
         className,
       )}

@@ -2,16 +2,16 @@ import { useState } from 'react';
 
 import { BackLink } from '@/components/atoms/BackLink';
 import { Button } from '@/components/atoms/Button';
+import { BallotList } from '@/components/organisms/BallotList';
 import { HonorConfirm } from '@/components/organisms/HonorConfirm';
-import { PlayerAvatarGrid } from '@/components/organisms/PlayerAvatarGrid';
-import { VoteTargetList } from '@/components/organisms/VoteTargetList';
+import { PlayerTicketList } from '@/components/organisms/PlayerTicketList';
 import { ScreenLayout } from '@/components/templates/ScreenLayout';
 import { getPlayerDisplayName, useGameStore } from '@/store/useGameStore';
 
-type View = { kind: 'grid' } | { kind: 'detail'; voterId: string };
+type View = { kind: 'list' } | { kind: 'detail'; voterId: string };
 
 export function VotePage() {
-  const [view, setView] = useState<View>({ kind: 'grid' });
+  const [view, setView] = useState<View>({ kind: 'list' });
   const [selectedTargetId, setSelectedTargetId] = useState<string | null>(null);
 
   const players = useGameStore((state) => state.players);
@@ -48,15 +48,22 @@ export function VotePage() {
       .filter(({ player }) => player.id !== voter.id);
 
     const confirmLabel = selectedTargetId
-      ? `Confirm Vote: ${getPlayerDisplayName(
+      ? `Mark ${getPlayerDisplayName(
           players[players.findIndex((player) => player.id === selectedTargetId)],
           players.findIndex((player) => player.id === selectedTargetId),
         )}`
-      : 'Select a player';
+      : 'Pick a name';
 
     return (
       <ScreenLayout
-        header={<BackLink onClick={() => setView({ kind: 'grid' })} />}
+        header={
+          <div className="flex items-center justify-between px-6">
+            <BackLink onClick={() => setView({ kind: 'list' })} />
+            <div className="font-display text-xs font-bold uppercase tracking-widest text-text-dim">
+              {getPlayerDisplayName(voter, voterIndex)}
+            </div>
+          </div>
+        }
         footer={
           <Button
             variant="danger"
@@ -64,19 +71,17 @@ export function VotePage() {
             onClick={() => {
               if (!selectedTargetId) return;
               castVote(voter.id, selectedTargetId);
-              setView({ kind: 'grid' });
+              setView({ kind: 'list' });
             }}
           >
             {confirmLabel}
           </Button>
         }
       >
-        <div className="flex h-full flex-col gap-4 px-6 pb-2 pt-3">
-          <div>
-            <h1 className="font-display text-xl font-extrabold">{getPlayerDisplayName(voter, voterIndex)}'s vote</h1>
-            <p className="mt-1 text-[13px] text-text-dim">Who do you think is the imposter?</p>
-          </div>
-          <VoteTargetList targets={targets} selectedId={selectedTargetId} onSelect={setSelectedTargetId} />
+        <div className="flex h-full flex-col gap-1 px-6 pb-2 pt-5">
+          <div className="text-[11px] font-bold uppercase tracking-widest text-danger">Secret ballot</div>
+          <h1 className="mb-3 font-display text-2xl font-extrabold">Who's the fake?</h1>
+          <BallotList targets={targets} selectedId={selectedTargetId} onSelect={setSelectedTargetId} />
         </div>
       </ScreenLayout>
     );
@@ -87,18 +92,25 @@ export function VotePage() {
       footer={
         <div className="flex flex-col items-center gap-3">
           <Button variant="danger" onClick={finishVoting} disabled={!allVoted}>
-            See Results
+            See results
           </Button>
           <button type="button" onClick={() => setVoteView('honor')} className="text-[13px] font-semibold text-text-dim">
-            Prefer to decide out loud? <span className="font-bold text-amber">Skip voting →</span>
+            Prefer to decide out loud? <span className="font-bold text-primary">Skip →</span>
           </button>
         </div>
       }
     >
-      <div className="flex flex-col gap-1 px-6 pb-2 pt-3 text-center">
-        <h1 className="font-display text-2xl font-extrabold">Vote</h1>
-        <p className="text-[13px] text-text-dim">Each player taps their name to cast a secret vote.</p>
-        <PlayerAvatarGrid players={players} isDone={(id) => votedVoterIds.has(id)} onSelect={openVoter} />
+      <div className="flex flex-col gap-1 px-6 pb-2 pt-5">
+        <div className="text-[11px] font-bold uppercase tracking-widest text-danger">Final call</div>
+        <h1 className="font-display text-3xl font-extrabold">Cast it</h1>
+        <p className="mb-2 text-[13px] text-text-dim">Each player taps their own name to vote in private.</p>
+        <PlayerTicketList
+          players={players}
+          isDone={(id) => votedVoterIds.has(id)}
+          doneLabel="Voted"
+          pendingLabel="Tap to vote"
+          onSelect={openVoter}
+        />
       </div>
     </ScreenLayout>
   );
