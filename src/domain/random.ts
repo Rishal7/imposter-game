@@ -20,3 +20,15 @@ export function pickRandom<T>(items: readonly T[], random: RandomSource): T {
   }
   return items[random.nextInt(items.length)];
 }
+
+/** Picks `count` distinct items without replacement, in random order. */
+export function pickDistinct<T>(items: readonly T[], count: number, random: RandomSource): T[] {
+  const pool = [...items];
+  const picked: T[] = [];
+  for (let i = 0; i < count && pool.length > 0; i += 1) {
+    const index = random.nextInt(pool.length);
+    picked.push(pool[index]);
+    pool.splice(index, 1);
+  }
+  return picked;
+}

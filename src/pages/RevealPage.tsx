@@ -34,12 +34,18 @@ export function RevealPage() {
     setView({ kind: 'grid' });
   };
 
+  const nameForId = (playerId: string): string | null => {
+    const index = players.findIndex((player) => player.id === playerId);
+    return index >= 0 ? getPlayerDisplayName(players[index], index) : null;
+  };
+
   if (view.kind === 'detail') {
     const index = players.findIndex((player) => player.id === view.playerId);
     const player = players[index];
     const role = round.roles.get(view.playerId);
     if (!player || !role) return null;
     const name = getPlayerDisplayName(player, index);
+    const teammateName = role.kind === 'imposter' && role.teammateId ? nameForId(role.teammateId) : null;
 
     return (
       <ScreenLayout
@@ -63,6 +69,7 @@ export function RevealPage() {
               categoryName={round.categoryName}
               playerName={name}
               paletteIndex={index}
+              teammateName={teammateName}
               revealed={revealed}
               onReveal={() => setRevealed(true)}
             />

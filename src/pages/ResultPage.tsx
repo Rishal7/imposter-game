@@ -10,6 +10,11 @@ import { tallyVotes } from '@/domain/gameEngine';
 import { cn } from '@/lib/cn';
 import { getPlayerDisplayName, useGameStore } from '@/store/useGameStore';
 
+function joinNames(names: readonly string[]): string {
+  if (names.length <= 1) return names[0] ?? '';
+  return `${names.slice(0, -1).join(', ')} & ${names[names.length - 1]}`;
+}
+
 export function ResultPage() {
   const [stage, setStage] = useState<'imposter' | 'full'>('imposter');
 
@@ -22,9 +27,12 @@ export function ResultPage() {
 
   if (!round || !outcome) return null;
 
-  const imposterIndex = players.findIndex((player) => player.id === outcome.imposterId);
-  const imposter = players[imposterIndex];
-  const imposterName = getPlayerDisplayName(imposter, imposterIndex);
+  const imposters = outcome.imposterIds.map((id) => {
+    const index = players.findIndex((player) => player.id === id);
+    return { index, player: players[index], name: getPlayerDisplayName(players[index], index) };
+  });
+  const imposterNames = joinNames(imposters.map((imposter) => imposter.name));
+  const isPlural = imposters.length > 1;
   const won = outcome.imposterCaught;
   const votedOutName =
     outcome.votedOutId !== null
@@ -40,9 +48,15 @@ export function ResultPage() {
     return (
       <ScreenLayout>
         <div className="flex h-full flex-col items-center justify-center gap-4 px-8 text-center">
-          <div className="text-sm font-semibold text-text-dim">The imposter was...</div>
-          <Avatar name={imposterName} paletteIndex={imposterIndex} size="xl" ring="red" />
-          <div className="font-display text-2xl font-extrabold text-red">{imposterName}</div>
+          <div className="text-sm font-semibold text-text-dim">
+            {isPlural ? 'The imposters were...' : 'The imposter was...'}
+          </div>
+          <div className="flex items-center gap-3">
+            {imposters.map((imposter) => (
+              <Avatar key={imposter.player.id} name={imposter.name} paletteIndex={imposter.index} size="xl" ring="red" />
+            ))}
+          </div>
+          <div className="font-display text-2xl font-extrabold text-red">{imposterNames}</div>
           <button
             type="button"
             onClick={() => setStage('full')}
@@ -76,8 +90,14 @@ export function ResultPage() {
             won ? 'border-amber bg-amber/10' : 'border-red bg-red/10',
           )}
         >
-          <Avatar name={imposterName} paletteIndex={imposterIndex} size="md" />
-          <div className="text-[13px] text-text-dim">Imposter was {imposterName}</div>
+          <div className="flex items-center gap-2">
+            {imposters.map((imposter) => (
+              <Avatar key={imposter.player.id} name={imposter.name} paletteIndex={imposter.index} size="md" />
+            ))}
+          </div>
+          <div className="text-[13px] text-text-dim">
+            {isPlural ? `Imposters were ${imposterNames}` : `Imposter was ${imposterNames}`}
+          </div>
           <div className={cn('font-display text-xl font-extrabold', won ? 'text-amber' : 'text-red')}>
             {won ? 'Busted! Nice work, detectives.' : 'Smooth move, imposter.'}
           </div>
@@ -86,7 +106,7 @@ export function ResultPage() {
               ? 'The crew sniffed them out. Civilians take the round.'
               : outcome.votedOutId !== null
                 ? `${votedOutName} wasn't the imposter. They slipped away this round.`
-                : 'The imposter slipped away this round.'}
+                : `${isPlural ? 'The imposters' : 'The imposter'} slipped away this round.`}
           </p>
         </div>
 

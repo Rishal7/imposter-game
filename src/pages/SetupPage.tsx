@@ -8,7 +8,7 @@ import { CategoryPicker } from '@/components/organisms/CategoryPicker';
 import { PlayerListEditor } from '@/components/organisms/PlayerListEditor';
 import { SettingToggle } from '@/components/molecules/SettingToggle';
 import { ScreenLayout } from '@/components/templates/ScreenLayout';
-import { MAX_PLAYERS, MIN_PLAYERS } from '@/domain/gameEngine';
+import { MAX_PLAYERS, MIN_PLAYERS, MIN_PLAYERS_FOR_TWO_IMPOSTERS } from '@/domain/gameEngine';
 import { getCategories, useGameStore } from '@/store/useGameStore';
 
 export function SetupPage() {
@@ -24,6 +24,7 @@ export function SetupPage() {
   const clearAllCategories = useGameStore((state) => state.clearAllCategories);
   const toggleImposterSeesCategory = useGameStore((state) => state.toggleImposterSeesCategory);
   const toggleImposterGetsHint = useGameStore((state) => state.toggleImposterGetsHint);
+  const toggleTwoImposters = useGameStore((state) => state.toggleTwoImposters);
   const startGame = useGameStore((state) => state.startGame);
 
   const categories = getCategories();
@@ -94,6 +95,17 @@ export function SetupPage() {
             checked={settings.imposterGetsHint}
             onChange={toggleImposterGetsHint}
           />
+          {players.length >= MIN_PLAYERS_FOR_TWO_IMPOSTERS ? (
+            <>
+              <div className="h-px bg-line/20" />
+              <SettingToggle
+                title="Two imposters"
+                description="A second imposter joins — they'll know who their partner is"
+                checked={settings.twoImposters}
+                onChange={toggleTwoImposters}
+              />
+            </>
+          ) : null}
         </Card>
       </div>
     </ScreenLayout>

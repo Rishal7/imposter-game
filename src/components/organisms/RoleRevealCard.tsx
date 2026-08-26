@@ -19,11 +19,21 @@ interface RoleRevealCardProps {
   categoryName: string;
   playerName: string;
   paletteIndex: number;
+  /** The other imposter's display name, when this round has two. */
+  teammateName?: string | null;
   revealed: boolean;
   onReveal: () => void;
 }
 
-export function RoleRevealCard({ role, categoryName, playerName, paletteIndex, revealed, onReveal }: RoleRevealCardProps) {
+export function RoleRevealCard({
+  role,
+  categoryName,
+  playerName,
+  paletteIndex,
+  teammateName,
+  revealed,
+  onReveal,
+}: RoleRevealCardProps) {
   const [categoryShown, setCategoryShown] = useState(false);
 
   return (
@@ -57,6 +67,11 @@ export function RoleRevealCard({ role, categoryName, playerName, paletteIndex, r
               <div className="-mt-1.5 text-[11px] font-bold uppercase tracking-wide text-text-dim">Your hint word</div>
               <div className="-mt-2 font-display text-xl font-extrabold text-violet">{role.hint}</div>
             </>
+          ) : null}
+          {teammateName ? (
+            <div className="rounded-full border border-red/40 bg-red/10 px-3.5 py-1.5 text-[11px] font-bold text-red">
+              Your fellow imposter: {teammateName}
+            </div>
           ) : null}
           {role.category ? (
             categoryShown ? (

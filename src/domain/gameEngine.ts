@@ -1,10 +1,12 @@
 import type { RandomSource } from './random';
-import { pickRandom } from './random';
+import { pickDistinct } from './random';
 import type { GameSettings, Player, PlayerRole, RoundAssignment, RoundOutcome, VoteTally } from './types';
 import type { WordProvider } from './wordProvider';
 
 export const MIN_PLAYERS = 3;
 export const MAX_PLAYERS = 10;
+/** Below this player count, a round always runs with a single imposter. */
+export const MIN_PLAYERS_FOR_TWO_IMPOSTERS = 5;
 
 export interface AssignRoundParams {
   readonly players: readonly Player[];
@@ -15,10 +17,10 @@ export interface AssignRoundParams {
 }
 
 /**
- * Draws a secret word and picks the imposter for one round. Pure function:
- * every dependency (word source, randomness) is passed in, so the same
- * inputs always produce a reproducible shape and the logic can be unit
- * tested without mocking modules.
+ * Draws a secret word and picks the imposter(s) for one round. Pure
+ * function: every dependency (word source, randomness) is passed in, so
+ * the same inputs always produce a reproducible shape and the logic can
+ * be unit tested without mocking modules.
  */
 export function assignRound(params: AssignRoundParams): RoundAssignment {
   const { players, categoryIds, settings, wordProvider, random } = params;
@@ -29,19 +31,20 @@ export function assignRound(params: AssignRoundParams): RoundAssignment {
 
   const { category, entry } = wordProvider.pickSecretWord(categoryIds, random);
   const word = entry.word;
-  const imposter = pickRandom(players, random);
   const hintWord = settings.imposterGetsHint ? entry.hint : null;
+  const categoryForImposter = settings.imposterSeesCategory ? category.name : null;
+
+  const imposterCount = settings.twoImposters && players.length >= MIN_PLAYERS_FOR_TWO_IMPOSTERS ? 2 : 1;
+  const imposters = pickDistinct(players, imposterCount, random);
+  const imposterIds = imposters.map((player) => player.id);
 
   const roles = new Map<string, PlayerRole>(
     players.map((player): [string, PlayerRole] => {
-      if (player.id === imposter.id) {
+      if (imposterIds.includes(player.id)) {
+        const teammateId = imposterIds.find((id) => id !== player.id) ?? null;
         return [
           player.id,
-          {
-            kind: 'imposter',
-            hint: hintWord,
-            category: settings.imposterSeesCategory ? category.name : null,
-          },
+          { kind: 'imposter', hint: hintWord, category: categoryForImposter, teammateId },
         ];
       }
       return [player.id, { kind: 'civilian', word }];
@@ -52,7 +55,7 @@ export function assignRound(params: AssignRoundParams): RoundAssignment {
     categoryId: category.id,
     categoryName: category.name,
     secretWord: word,
-    imposterId: imposter.id,
+    imposterIds,
     roles,
   };
 }
@@ -75,10 +78,10 @@ export function tallyVotes(players: readonly Player[], votes: readonly Vote[]): 
     .sort((a, b) => b.votes - a.votes);
 }
 
-export function determineOutcome(votedOutId: string | null, imposterId: string): RoundOutcome {
+export function determineOutcome(votedOutId: string | null, imposterIds: readonly string[]): RoundOutcome {
   return {
     votedOutId,
-    imposterId,
-    imposterCaught: votedOutId !== null && votedOutId === imposterId,
+    imposterIds,
+    imposterCaught: votedOutId !== null && imposterIds.includes(votedOutId),
   };
 }
