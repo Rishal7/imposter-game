@@ -18,7 +18,7 @@ export function PlayerRow({ index, name, onRename, onRemove, removable }: Player
         value={name}
         onChange={(event) => onRename(event.target.value)}
         placeholder={`Player ${index + 1}`}
-        className="min-w-0 flex-1 bg-transparent py-1 text-[15px] font-semibold text-text placeholder:text-text-dim placeholder:font-medium focus:outline-none"
+        className="min-w-0 flex-1 bg-transparent py-1 text-base font-semibold text-text placeholder:text-text-dim placeholder:font-medium focus:outline-none"
       />
       <button
         type="button"
