@@ -34,14 +34,9 @@ export function CustomCategoryModal({ onSave, onClose }: CustomCategoryModalProp
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-bg/96 backdrop-blur-sm">
       <div className="flex items-center justify-between px-6 pt-6 pb-2">
-        <span className="text-sm font-bold text-text">New word pack</span>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close"
-          className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-2 text-text-dim"
-        >
-          <XIcon width={15} height={15} strokeWidth={2.4} />
+        <span className="font-display text-xs font-bold uppercase tracking-widest text-text-dim">New word pack</span>
+        <button type="button" onClick={onClose} aria-label="Close" className="p-1 text-text-dim">
+          <XIcon width={16} height={16} strokeWidth={2.4} />
         </button>
       </div>
 
@@ -50,10 +45,10 @@ export function CustomCategoryModal({ onSave, onClose }: CustomCategoryModalProp
           value={name}
           onChange={(event) => setName(event.target.value)}
           placeholder="Pack name"
-          className="mb-4 w-full rounded-xl border border-line/25 bg-surface-2 px-3 py-3 font-display text-base font-extrabold text-text placeholder:text-text-dim placeholder:font-extrabold focus:outline-2 focus:outline-amber"
+          className="mb-4 w-full border-b border-dashed border-line/25 bg-transparent py-2 font-display text-lg font-extrabold text-text placeholder:text-text-dim placeholder:font-extrabold focus:outline-none"
         />
 
-        <div className="flex flex-col gap-2.5">
+        <div className="flex flex-col">
           {rows.map((row, index) => (
             <WordPairRow
               key={index}
@@ -71,10 +66,10 @@ export function CustomCategoryModal({ onSave, onClose }: CustomCategoryModalProp
         <button
           type="button"
           onClick={() => setRows((current) => [...current, emptyRow()])}
-          className="mt-3 flex items-center justify-center gap-2 rounded-xl border border-line/25 bg-surface-2 py-3 text-[13px] font-semibold text-text-dim"
+          className="flex items-center gap-2 py-4 text-[13px] font-bold uppercase tracking-wide text-primary"
         >
-          <PlusIcon width={15} height={15} />
-          Add Word
+          <PlusIcon width={14} height={14} strokeWidth={2.4} />
+          Add word
         </button>
       </div>
 
@@ -87,7 +82,7 @@ export function CustomCategoryModal({ onSave, onClose }: CustomCategoryModalProp
             onClose();
           }}
         >
-          Save Pack
+          Save pack
         </Button>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import type { SVGProps } from 'react';
+import { useId, type SVGProps } from 'react';
 
 export type IconProps = SVGProps<SVGSVGElement>;
 
@@ -145,6 +145,14 @@ export function ChatDotsIcon(props: IconProps) {
   );
 }
 
+export function ArrowRightIcon(props: IconProps) {
+  return (
+    <svg {...withDefaults(props)}>
+      <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export function ArrowLeftIcon(props: IconProps) {
   return (
     <svg {...withDefaults(props)}>
@@ -189,17 +197,17 @@ export function DetectiveIcon(props: IconProps) {
   );
 }
 
-export function ShieldMaskIcon(props: IconProps) {
+/** The bandit-mask brand glyph — a filled shape, matching the app/PWA icon. */
+export function MaskIcon(props: IconProps) {
+  const id = useId();
   return (
     <svg {...withDefaults(props)}>
-      <path
-        d="M9 9a3 3 0 1 1 4.5 2.6c-.9.5-1.5 1-1.5 2.4"
-        stroke="currentColor"
-        strokeWidth={2.2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <circle cx="12" cy="18" r="0.9" fill="currentColor" />
+      <mask id={id}>
+        <rect width="24" height="24" fill="#fff" />
+        <ellipse cx="8.4" cy="12" rx="2.3" ry="2.7" fill="#000" />
+        <ellipse cx="15.6" cy="12" rx="2.3" ry="2.7" fill="#000" />
+      </mask>
+      <rect x="3" y="8.6" width="18" height="6.8" rx="3.4" fill="currentColor" mask={`url(#${id})`} />
     </svg>
   );
 }

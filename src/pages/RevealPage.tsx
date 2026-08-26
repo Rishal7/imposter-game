@@ -1,108 +1,85 @@
 import { useState } from 'react';
 
 import { BackLink } from '@/components/atoms/BackLink';
+import { BrandMark } from '@/components/atoms/BrandMark';
 import { Button } from '@/components/atoms/Button';
-import { PlayerAvatarGrid } from '@/components/organisms/PlayerAvatarGrid';
-import { RoleRevealCard } from '@/components/organisms/RoleRevealCard';
+import { PeekModal } from '@/components/organisms/PeekModal';
+import { PlayerTicketList } from '@/components/organisms/PlayerTicketList';
 import { ScreenLayout } from '@/components/templates/ScreenLayout';
-import { cn } from '@/lib/cn';
-import { notifyPeek } from '@/lib/feedback';
 import { getPlayerDisplayName, useGameStore } from '@/store/useGameStore';
 
-type View = { kind: 'grid' } | { kind: 'detail'; playerId: string };
-
 export function RevealPage() {
-  const [view, setView] = useState<View>({ kind: 'grid' });
-  const [revealed, setRevealed] = useState(false);
+  const [activePlayerId, setActivePlayerId] = useState<string | null>(null);
 
   const players = useGameStore((state) => state.players);
   const round = useGameStore((state) => state.round);
   const revealedPlayerIds = useGameStore((state) => state.revealedPlayerIds);
   const markRevealed = useGameStore((state) => state.markRevealed);
   const goToDiscuss = useGameStore((state) => state.goToDiscuss);
+  const backToSetup = useGameStore((state) => state.backToSetup);
 
   if (!round) return null;
 
   const allRevealed = players.every((player) => revealedPlayerIds.has(player.id));
-
-  const openPlayer = (playerId: string) => {
-    setRevealed(false);
-    setView({ kind: 'detail', playerId });
-  };
-
-  const handleGotIt = (playerId: string) => {
-    markRevealed(playerId);
-    setView({ kind: 'grid' });
-  };
 
   const nameForId = (playerId: string): string | null => {
     const index = players.findIndex((player) => player.id === playerId);
     return index >= 0 ? getPlayerDisplayName(players[index], index) : null;
   };
 
-  if (view.kind === 'detail') {
-    const index = players.findIndex((player) => player.id === view.playerId);
-    const player = players[index];
-    const role = round.roles.get(view.playerId);
-    if (!player || !role) return null;
-    const name = getPlayerDisplayName(player, index);
-    const teammateName = role.kind === 'imposter' && role.teammateId ? nameForId(role.teammateId) : null;
-
-    return (
-      <ScreenLayout
-        header={<BackLink onClick={() => setView({ kind: 'grid' })} />}
-        footer={
-          <div className={cn(!revealed && 'invisible')}>
-            <Button variant="ghost" onClick={() => handleGotIt(player.id)}>
-              Got it!
-            </Button>
-          </div>
-        }
-      >
-        <div className="flex h-full flex-col items-center gap-4 px-7 pb-2 pt-1 text-center">
-          <div className="font-display text-lg font-bold text-text-dim">
-            The word for <span className="text-text">{name}</span>
-          </div>
-          <div className="flex flex-1 items-center justify-center">
-            <RoleRevealCard
-              key={player.id}
-              role={role}
-              categoryName={round.categoryName}
-              playerName={name}
-              paletteIndex={index}
-              teammateName={teammateName}
-              revealed={revealed}
-              onReveal={() => {
-                notifyPeek();
-                setRevealed(true);
-              }}
-            />
-          </div>
-        </div>
-      </ScreenLayout>
-    );
-  }
+  const activeIndex = activePlayerId ? players.findIndex((player) => player.id === activePlayerId) : -1;
+  const activePlayer = activeIndex >= 0 ? players[activeIndex] : null;
+  const activeRole = activePlayerId ? round.roles.get(activePlayerId) : undefined;
+  const teammateName = activeRole?.kind === 'imposter' && activeRole.teammateId ? nameForId(activeRole.teammateId) : null;
 
   return (
     <ScreenLayout
+      header={
+        <div className="flex items-center justify-between px-6">
+          <BackLink label="Back to setup" onClick={backToSetup} />
+          <BrandMark size={26} />
+        </div>
+      }
       footer={
         <div className="flex flex-col items-center gap-2">
           <Button onClick={goToDiscuss} disabled={!allRevealed}>
-            Continue to Discussion →
+            Continue to discussion
           </Button>
           <div className="text-xs text-text-dim">
-            {revealedPlayerIds.size} of {players.length} revealed
+            {revealedPlayerIds.size} of {players.length} peeked
           </div>
         </div>
       }
     >
-      <div className="flex flex-col gap-1 px-6 pb-2 pt-3 text-center">
-        <h1 className="font-display text-2xl font-extrabold">Players</h1>
-        <p className="text-[13px] leading-relaxed text-text-dim">
-          Tap your name to reveal your word, then pass the device to the next player.
+      <div className="flex flex-col gap-1 px-6 pb-2 pt-5">
+        <div className="text-[11px] font-bold uppercase tracking-widest text-accent">Pass it around</div>
+        <h1 className="font-display text-3xl font-extrabold">One by one</h1>
+        <p className="mb-2 text-[13px] leading-relaxed text-text-dim">
+          Tap your name, peek at your word, then hand the device to the next player.
         </p>
-        <PlayerAvatarGrid players={players} isDone={(id) => revealedPlayerIds.has(id)} onSelect={openPlayer} />
+        <PlayerTicketList
+          players={players}
+          isDone={(id) => revealedPlayerIds.has(id)}
+          doneLabel="Peeked"
+          pendingLabel="Tap to peek"
+          onSelect={setActivePlayerId}
+          lockWhenDone
+        />
       </div>
+
+      {activePlayer && activeRole ? (
+        <PeekModal
+          key={activePlayer.id}
+          name={getPlayerDisplayName(activePlayer, activeIndex)}
+          role={activeRole}
+          categoryName={round.categoryName}
+          teammateName={teammateName}
+          onClose={(viewed) => {
+            if (viewed) markRevealed(activePlayer.id);
+            setActivePlayerId(null);
+          }}
+        />
+      ) : null}
     </ScreenLayout>
   );
 }

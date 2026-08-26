@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 
-import { Avatar } from '@/components/atoms/Avatar';
+import { BrandMark } from '@/components/atoms/BrandMark';
 import { Button } from '@/components/atoms/Button';
-import { Card } from '@/components/atoms/Card';
 import { RestartIcon } from '@/components/icons';
 import { TallyList } from '@/components/organisms/TallyList';
 import { ScreenLayout } from '@/components/templates/ScreenLayout';
@@ -32,12 +31,12 @@ export function ResultPage() {
 
   if (!round || !outcome) return null;
 
-  const imposters = outcome.imposterIds.map((id) => {
+  const imposterNames = outcome.imposterIds.map((id) => {
     const index = players.findIndex((player) => player.id === id);
-    return { index, player: players[index], name: getPlayerDisplayName(players[index], index) };
+    return getPlayerDisplayName(players[index], index);
   });
-  const imposterNames = joinNames(imposters.map((imposter) => imposter.name));
-  const isPlural = imposters.length > 1;
+  const imposterLabel = joinNames(imposterNames);
+  const isPlural = imposterNames.length > 1;
   const won = outcome.imposterCaught;
   const votedOutName =
     outcome.votedOutId !== null
@@ -51,27 +50,31 @@ export function ResultPage() {
 
   if (stage === 'imposter') {
     return (
-      <ScreenLayout>
-        <div className="flex h-full flex-col items-center justify-center gap-4 px-8 text-center">
-          <div className="text-sm font-semibold text-text-dim">
-            {isPlural ? 'The imposters were...' : 'The imposter was...'}
+      <ScreenLayout
+        header={
+          <div className="px-6">
+            <BrandMark size={26} />
           </div>
-          <div className="flex items-center gap-3">
-            {imposters.map((imposter) => (
-              <Avatar key={imposter.player.id} name={imposter.name} paletteIndex={imposter.index} size="xl" ring="red" />
-            ))}
-          </div>
-          <div className="font-display text-2xl font-extrabold text-red">{imposterNames}</div>
-          <button
-            type="button"
+        }
+        footer={
+          <Button
+            variant="danger"
             onClick={() => {
               notifyReveal();
               setStage('full');
             }}
-            className="mt-2 w-full max-w-[260px] rounded-2xl bg-amber px-4 py-4 font-display text-base font-bold text-amber-ink shadow-[0_12px_24px_-12px_oklch(75%_0.16_55_/_55%)]"
           >
-            Reveal the Word
-          </button>
+            Reveal the word
+          </Button>
+        }
+      >
+        <div className="flex h-full flex-col items-center justify-center gap-3 bg-danger px-8 text-center">
+          <div className="text-sm font-bold text-bg/60 uppercase tracking-widest">
+            {isPlural ? 'The imposters were' : 'The imposter was'}
+          </div>
+          <div className="font-display text-4xl leading-[0.95] font-extrabold break-words text-bg sm:text-5xl">
+            {imposterLabel}
+          </div>
         </div>
       </ScreenLayout>
     );
@@ -79,11 +82,16 @@ export function ResultPage() {
 
   return (
     <ScreenLayout
+      header={
+        <div className="px-6">
+          <BrandMark size={26} />
+        </div>
+      }
       footer={
         <div className="flex flex-col items-center gap-2.5">
           <Button onClick={playAgain}>
             <RestartIcon width={15} height={15} />
-            Play Again
+            Play again
           </Button>
           <button type="button" onClick={backToSetup} className="text-[13px] font-semibold text-text-dim">
             Back to setup
@@ -91,41 +99,28 @@ export function ResultPage() {
         </div>
       }
     >
-      <div className="flex flex-col gap-4 px-6 pb-2 pt-3">
-        <div
-          className={cn(
-            'flex flex-col items-center gap-2.5 rounded-[22px] border p-6 text-center shadow-[0_14px_32px_-16px_rgba(0,0,0,0.6)]',
-            won ? 'border-amber bg-amber/10' : 'border-red bg-red/10',
-          )}
-        >
-          <div className="flex items-center gap-2">
-            {imposters.map((imposter) => (
-              <Avatar key={imposter.player.id} name={imposter.name} paletteIndex={imposter.index} size="md" />
-            ))}
+      <div className="flex flex-col gap-6 px-6 pb-2 pt-5">
+        <div>
+          <div className={cn('text-[11px] font-bold uppercase tracking-widest', won ? 'text-accent' : 'text-danger')}>
+            {won ? 'Crew wins' : 'Imposter wins'}
           </div>
-          <div className="text-[13px] text-text-dim">
-            {isPlural ? `Imposters were ${imposterNames}` : `Imposter was ${imposterNames}`}
-          </div>
-          <div className={cn('font-display text-xl font-extrabold', won ? 'text-amber' : 'text-red')}>
-            {won ? 'Busted! Nice work, detectives.' : 'Smooth move, imposter.'}
-          </div>
-          <p className="max-w-[230px] text-[13px] text-text-dim">
+          <h1 className="font-display text-3xl leading-tight font-extrabold">
+            {won ? 'Busted.' : 'Smooth move.'}
+          </h1>
+          <p className="mt-1 text-[13px] leading-relaxed text-text-dim">
             {won
-              ? 'The crew sniffed them out. Civilians take the round.'
+              ? `${imposterLabel} ${isPlural ? 'were the imposters' : 'was the imposter'} — the crew sniffed them out.`
               : outcome.votedOutId !== null
-                ? `${votedOutName} wasn't the imposter. They slipped away this round.`
-                : `${isPlural ? 'The imposters' : 'The imposter'} slipped away this round.`}
+                ? `${votedOutName} wasn't the imposter. ${imposterLabel} slipped away this round.`
+                : `${imposterLabel} slipped away this round.`}
           </p>
         </div>
 
-        <Card>
-          <div className="text-xs font-bold uppercase tracking-wide text-text-dim">The Word</div>
-          <div className="flex flex-col gap-1 rounded-2xl bg-surface-2 p-4 text-center">
-            <div className="text-xs text-text-dim">everyone else saw</div>
-            <div className="font-display text-2xl font-extrabold text-amber">{round.secretWord}</div>
-            <div className="mt-0.5 text-xs text-text-dim">Category: {round.categoryName}</div>
-          </div>
-        </Card>
+        <div className="border-t border-b border-dashed border-line/25 py-4 text-center">
+          <div className="text-[11px] font-bold uppercase tracking-widest text-text-dim">Everyone else saw</div>
+          <div className="font-display text-3xl font-extrabold text-primary">{round.secretWord}</div>
+          <div className="mt-1 text-xs text-text-dim">Category: {round.categoryName}</div>
+        </div>
 
         {votes.length > 0 ? (
           <TallyList

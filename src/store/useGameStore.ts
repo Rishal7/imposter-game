@@ -40,8 +40,6 @@ interface GameState {
   removePlayer(id: string): void;
   renamePlayer(id: string, name: string): void;
   toggleCategory(id: string): void;
-  selectAllCategories(): void;
-  clearAllCategories(): void;
   addCustomCategory(name: string, words: readonly WordEntry[]): void;
   removeCustomCategory(id: string): void;
   toggleImposterSeesCategory(): void;
@@ -99,12 +97,6 @@ export const useGameStore = create<GameState>((set, get) => ({
         ? state.selectedCategoryIds.filter((categoryId) => categoryId !== id)
         : [...state.selectedCategoryIds, id],
     })),
-
-  selectAllCategories: () =>
-    set((state) => ({
-      selectedCategoryIds: [...CATEGORIES, ...state.customCategories].map((category) => category.id),
-    })),
-  clearAllCategories: () => set({ selectedCategoryIds: [] }),
 
   addCustomCategory: (name, words) =>
     set((state) => {

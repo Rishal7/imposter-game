@@ -9,8 +9,8 @@ interface HonorConfirmProps {
 /** Fallback for groups who'd rather decide out loud than run a full vote. */
 export function HonorConfirm({ onCaught, onEscaped }: HonorConfirmProps) {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-4 px-4 text-center">
-      <div className="flex h-16 w-16 items-center justify-center rounded-full border border-line/25 bg-surface shadow-[0_14px_32px_-16px_rgba(0,0,0,0.6)]">
+    <div className="flex h-full flex-col items-center justify-center gap-4 px-4 text-center">
+      <div className="cut flex h-16 w-16 items-center justify-center border border-line/25 bg-surface">
         <DetectiveIcon width={30} height={30} className="text-text" />
       </div>
       <div className="font-display text-xl font-extrabold text-text">Did you catch the imposter?</div>

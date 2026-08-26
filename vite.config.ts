@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
-const THEME_COLOR = '#0c0b10';
+const THEME_COLOR = '#0a0d14';
 
 export default defineConfig({
   plugins: [

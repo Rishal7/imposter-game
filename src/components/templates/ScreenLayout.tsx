@@ -23,7 +23,7 @@ export function ScreenLayout({ header, footer, children }: ScreenLayoutProps) {
       <div
         className="flex h-dvh w-full max-w-md flex-col overflow-hidden bg-bg
           sm:max-w-lg md:max-w-2xl
-          lg:h-[min(860px,90dvh)] lg:rounded-[36px] lg:border lg:border-line/20 lg:shadow-[0_50px_120px_-40px_rgba(0,0,0,0.7)]"
+          lg:h-[min(860px,90dvh)] lg:cut lg:cut-lg lg:border lg:border-line/20 lg:shadow-[0_50px_120px_-40px_rgba(0,0,0,0.7)]"
       >
         {header ? <div className="pt-safe shrink-0">{header}</div> : null}
         <div className="no-scrollbar flex-1 overflow-y-auto">{children}</div>

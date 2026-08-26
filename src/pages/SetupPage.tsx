@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react';
 
+import { BrandMark } from '@/components/atoms/BrandMark';
 import { Button } from '@/components/atoms/Button';
-import { Card } from '@/components/atoms/Card';
-import { IconTile } from '@/components/atoms/IconTile';
-import { DownloadIcon, PlayIcon, ShareIcon, ShieldMaskIcon } from '@/components/icons';
+import { ArrowRightIcon, DownloadIcon, PlayIcon, ShareIcon } from '@/components/icons';
 import { InstallNudge } from '@/components/molecules/InstallNudge';
+import { SettingToggle } from '@/components/molecules/SettingToggle';
 import { CategoryPicker } from '@/components/organisms/CategoryPicker';
 import { CustomCategoryModal } from '@/components/organisms/CustomCategoryModal';
 import { PlayerListEditor } from '@/components/organisms/PlayerListEditor';
-import { SettingToggle } from '@/components/molecules/SettingToggle';
 import { ScreenLayout } from '@/components/templates/ScreenLayout';
 import { MAX_PLAYERS, MIN_PLAYERS, MIN_PLAYERS_FOR_TWO_IMPOSTERS } from '@/domain/gameEngine';
 import {
@@ -17,11 +16,17 @@ import {
   shouldShowAndroidInstallNudge,
   triggerAndroidInstallPrompt,
 } from '@/lib/androidInstallPrompt';
+import { cn } from '@/lib/cn';
 import { dismissIosInstallNudge, shouldShowIosInstallNudge } from '@/lib/installNudge';
 import { useAllCategories, useGameStore } from '@/store/useGameStore';
 
+const STEPS = [
+  { step: 1, label: 'Crew' },
+  { step: 2, label: 'Rules' },
+] as const;
+
 export function SetupPage() {
-  const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const [step, setStep] = useState<1 | 2>(1);
   const [creatingCategory, setCreatingCategory] = useState(false);
   const [showIosInstallNudge, setShowIosInstallNudge] = useState(() => shouldShowIosInstallNudge());
   const [showAndroidInstallNudge, setShowAndroidInstallNudge] = useState(() => shouldShowAndroidInstallNudge());
@@ -39,8 +44,6 @@ export function SetupPage() {
   const removePlayer = useGameStore((state) => state.removePlayer);
   const renamePlayer = useGameStore((state) => state.renamePlayer);
   const toggleCategory = useGameStore((state) => state.toggleCategory);
-  const selectAllCategories = useGameStore((state) => state.selectAllCategories);
-  const clearAllCategories = useGameStore((state) => state.clearAllCategories);
   const addCustomCategory = useGameStore((state) => state.addCustomCategory);
   const removeCustomCategory = useGameStore((state) => state.removeCustomCategory);
   const toggleImposterSeesCategory = useGameStore((state) => state.toggleImposterSeesCategory);
@@ -51,74 +54,94 @@ export function SetupPage() {
   const categories = useAllCategories();
   const customCategoryIds = customCategories.map((category) => category.id);
   const canStart = players.length >= MIN_PLAYERS && selectedCategoryIds.length > 0;
-  const helperText =
-    selectedCategoryIds.length === 0
-      ? 'Pick at least one category'
-      : `${players.length} players · ready to play`;
 
   return (
     <ScreenLayout
       header={
-        <div className="flex items-center gap-2.5 px-6 pb-1.5">
-          <IconTile tone="brand" size={30}>
-            <ShieldMaskIcon width={15} height={15} strokeWidth={2.2} />
-          </IconTile>
-          <div className="font-display text-sm font-extrabold tracking-wide">IMPOSTER</div>
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-2.5 px-6">
+            <BrandMark size={30} />
+            <div className="font-display text-sm font-extrabold tracking-wide">IMPOSTER</div>
+          </div>
+          <div className="flex px-6">
+            {STEPS.map((s) => (
+              <div
+                key={s.step}
+                className={cn('flex-1 border-b-2 pb-2', step === s.step ? 'border-primary' : 'border-line/15')}
+              >
+                <span
+                  className={cn(
+                    'font-display text-[11px] font-bold uppercase tracking-widest',
+                    step === s.step ? 'text-primary' : 'text-text-dim/60',
+                  )}
+                >
+                  0{s.step} · {s.label}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       }
       footer={
-        <div className="flex flex-col items-center gap-2">
-          <Button onClick={startGame} disabled={!canStart}>
-            <PlayIcon width={15} height={15} />
-            Start Game
+        step === 1 ? (
+          <Button onClick={() => setStep(2)}>
+            Next
+            <ArrowRightIcon width={15} height={15} strokeWidth={2.4} />
           </Button>
-          <div className="text-xs text-text-dim">{helperText}</div>
-        </div>
+        ) : (
+          <div className="flex flex-col gap-2.5">
+            <Button onClick={startGame} disabled={!canStart}>
+              <PlayIcon width={15} height={15} />
+              Start Game
+            </Button>
+            <button
+              type="button"
+              onClick={() => setStep(1)}
+              className="text-center text-[13px] font-semibold text-text-dim"
+            >
+              ← Back to crew
+            </button>
+          </div>
+        )
       }
     >
-      <div className="flex flex-col gap-4 px-6 pb-2 pt-2.5 md:grid md:grid-cols-2 md:items-start md:gap-x-4">
-        <div className="text-center md:col-span-2">
-          <h1 className="font-display text-[22px] font-extrabold md:text-2xl">Set up game</h1>
-          <p className="mt-1 text-[13px] text-text-dim">Configure before starting</p>
-        </div>
+      {showIosInstallNudge ? (
+        <InstallNudge
+          icon={<ShareIcon width={18} height={18} />}
+          message={
+            <>
+              Install this app — tap <span className="font-bold text-primary">Share</span> then{' '}
+              <span className="font-bold text-primary">Add to Home Screen</span>.
+            </>
+          }
+          onDismiss={() => {
+            dismissIosInstallNudge();
+            setShowIosInstallNudge(false);
+          }}
+        />
+      ) : null}
 
-        {showIosInstallNudge ? (
-          <div className="md:col-span-2">
-            <InstallNudge
-              icon={<ShareIcon width={18} height={18} />}
-              message={
-                <>
-                  Install this app — tap <span className="font-bold text-amber">Share</span> then{' '}
-                  <span className="font-bold text-amber">Add to Home Screen</span>.
-                </>
-              }
-              onDismiss={() => {
-                dismissIosInstallNudge();
-                setShowIosInstallNudge(false);
-              }}
-            />
-          </div>
-        ) : null}
+      {showAndroidInstallNudge ? (
+        <InstallNudge
+          icon={<DownloadIcon width={18} height={18} />}
+          message="Install this app for quick access and a full-screen experience."
+          actionLabel="Install"
+          onAction={async () => {
+            await triggerAndroidInstallPrompt();
+            setShowAndroidInstallNudge(false);
+          }}
+          onDismiss={() => {
+            dismissAndroidInstallNudge();
+            setShowAndroidInstallNudge(false);
+          }}
+        />
+      ) : null}
 
-        {showAndroidInstallNudge ? (
-          <div className="md:col-span-2">
-            <InstallNudge
-              icon={<DownloadIcon width={18} height={18} />}
-              message="Install this app for quick access and a full-screen experience."
-              actionLabel="Install"
-              onAction={async () => {
-                await triggerAndroidInstallPrompt();
-                setShowAndroidInstallNudge(false);
-              }}
-              onDismiss={() => {
-                dismissAndroidInstallNudge();
-                setShowAndroidInstallNudge(false);
-              }}
-            />
-          </div>
-        ) : null}
-
-        <div className="md:col-span-2">
+      {step === 1 ? (
+        <div className="flex flex-col gap-1 px-6 pb-2 pt-5">
+          <div className="text-[11px] font-bold uppercase tracking-widest text-accent">Step 1</div>
+          <h1 className="font-display text-3xl leading-tight font-extrabold">Who’s playing?</h1>
+          <p className="mb-3 text-[13px] text-text-dim">Name everyone passing the phone tonight.</p>
           <PlayerListEditor
             players={players}
             minPlayers={MIN_PLAYERS}
@@ -128,47 +151,51 @@ export function SetupPage() {
             onAdd={addPlayer}
           />
         </div>
+      ) : (
+        <div className="flex flex-col gap-6 px-6 pb-2 pt-5">
+          <div className="flex flex-col gap-1">
+            <div className="text-[11px] font-bold uppercase tracking-widest text-accent">Step 2</div>
+            <h1 className="font-display text-3xl leading-tight font-extrabold">Set the rules</h1>
+            <p className="text-[13px] text-text-dim">Choose a word pack and how much rope to give the imposter.</p>
+          </div>
 
-        <CategoryPicker
-          categories={categories}
-          selectedIds={selectedCategoryIds}
-          customCategoryIds={customCategoryIds}
-          open={categoriesOpen}
-          onToggleOpen={() => setCategoriesOpen((value) => !value)}
-          onToggleCategory={toggleCategory}
-          onSelectAll={selectAllCategories}
-          onClearAll={clearAllCategories}
-          onRemoveCategory={removeCustomCategory}
-          onCreateCategory={() => setCreatingCategory(true)}
-        />
+          <CategoryPicker
+            categories={categories}
+            selectedIds={selectedCategoryIds}
+            customCategoryIds={customCategoryIds}
+            onToggleCategory={toggleCategory}
+            onRemoveCategory={removeCustomCategory}
+            onCreateCategory={() => setCreatingCategory(true)}
+          />
 
-        <Card>
-          <SettingToggle
-            title="Imposter sees category"
-            description="Imposter can see the category name"
-            checked={settings.imposterSeesCategory}
-            onChange={toggleImposterSeesCategory}
-          />
-          <div className="h-px bg-line/20" />
-          <SettingToggle
-            title="Show imposter a hint"
-            description="Imposter sees a related but different word"
-            checked={settings.imposterGetsHint}
-            onChange={toggleImposterGetsHint}
-          />
-          {players.length >= MIN_PLAYERS_FOR_TWO_IMPOSTERS ? (
-            <>
-              <div className="h-px bg-line/20" />
-              <SettingToggle
-                title="Two imposters"
-                description="A second imposter joins — they'll know who their partner is"
-                checked={settings.twoImposters}
-                onChange={toggleTwoImposters}
-              />
-            </>
-          ) : null}
-        </Card>
-      </div>
+          <div className="flex flex-col">
+            <SettingToggle
+              title="Imposter sees category"
+              description="Imposter can see the category name"
+              checked={settings.imposterSeesCategory}
+              onChange={toggleImposterSeesCategory}
+            />
+            <div className="border-t border-dashed border-line/25" />
+            <SettingToggle
+              title="Show imposter a hint"
+              description="Imposter sees a related but different word"
+              checked={settings.imposterGetsHint}
+              onChange={toggleImposterGetsHint}
+            />
+            {players.length >= MIN_PLAYERS_FOR_TWO_IMPOSTERS ? (
+              <>
+                <div className="border-t border-dashed border-line/25" />
+                <SettingToggle
+                  title="Two imposters"
+                  description="A second imposter joins — they'll know who their partner is"
+                  checked={settings.twoImposters}
+                  onChange={toggleTwoImposters}
+                />
+              </>
+            ) : null}
+          </div>
+        </div>
+      )}
 
       {creatingCategory ? (
         <CustomCategoryModal onSave={addCustomCategory} onClose={() => setCreatingCategory(false)} />

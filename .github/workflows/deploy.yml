@@ -47,7 +47,3 @@ jobs:
           projectName: imposter-game
           directory: dist
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          # Wrangler 3's `pages deploy` creates the Pages project on first
-          # run if it doesn't exist yet; the v2 (default) path requires it
-          # to be created beforehand.
-          wranglerVersion: '3'
