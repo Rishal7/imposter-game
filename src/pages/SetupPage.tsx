@@ -5,16 +5,19 @@ import { Card } from '@/components/atoms/Card';
 import { IconTile } from '@/components/atoms/IconTile';
 import { PlayIcon, ShieldMaskIcon } from '@/components/icons';
 import { CategoryPicker } from '@/components/organisms/CategoryPicker';
+import { CustomCategoryModal } from '@/components/organisms/CustomCategoryModal';
 import { PlayerListEditor } from '@/components/organisms/PlayerListEditor';
 import { SettingToggle } from '@/components/molecules/SettingToggle';
 import { ScreenLayout } from '@/components/templates/ScreenLayout';
 import { MAX_PLAYERS, MIN_PLAYERS, MIN_PLAYERS_FOR_TWO_IMPOSTERS } from '@/domain/gameEngine';
-import { getCategories, useGameStore } from '@/store/useGameStore';
+import { useAllCategories, useGameStore } from '@/store/useGameStore';
 
 export function SetupPage() {
   const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const [creatingCategory, setCreatingCategory] = useState(false);
   const players = useGameStore((state) => state.players);
   const selectedCategoryIds = useGameStore((state) => state.selectedCategoryIds);
+  const customCategories = useGameStore((state) => state.customCategories);
   const settings = useGameStore((state) => state.settings);
   const addPlayer = useGameStore((state) => state.addPlayer);
   const removePlayer = useGameStore((state) => state.removePlayer);
@@ -22,12 +25,15 @@ export function SetupPage() {
   const toggleCategory = useGameStore((state) => state.toggleCategory);
   const selectAllCategories = useGameStore((state) => state.selectAllCategories);
   const clearAllCategories = useGameStore((state) => state.clearAllCategories);
+  const addCustomCategory = useGameStore((state) => state.addCustomCategory);
+  const removeCustomCategory = useGameStore((state) => state.removeCustomCategory);
   const toggleImposterSeesCategory = useGameStore((state) => state.toggleImposterSeesCategory);
   const toggleImposterGetsHint = useGameStore((state) => state.toggleImposterGetsHint);
   const toggleTwoImposters = useGameStore((state) => state.toggleTwoImposters);
   const startGame = useGameStore((state) => state.startGame);
 
-  const categories = getCategories();
+  const categories = useAllCategories();
+  const customCategoryIds = customCategories.map((category) => category.id);
   const canStart = players.length >= MIN_PLAYERS && selectedCategoryIds.length > 0;
   const helperText =
     selectedCategoryIds.length === 0
@@ -74,11 +80,14 @@ export function SetupPage() {
         <CategoryPicker
           categories={categories}
           selectedIds={selectedCategoryIds}
+          customCategoryIds={customCategoryIds}
           open={categoriesOpen}
           onToggleOpen={() => setCategoriesOpen((value) => !value)}
           onToggleCategory={toggleCategory}
           onSelectAll={selectAllCategories}
           onClearAll={clearAllCategories}
+          onRemoveCategory={removeCustomCategory}
+          onCreateCategory={() => setCreatingCategory(true)}
         />
 
         <Card>
@@ -108,6 +117,10 @@ export function SetupPage() {
           ) : null}
         </Card>
       </div>
+
+      {creatingCategory ? (
+        <CustomCategoryModal onSave={addCustomCategory} onClose={() => setCreatingCategory(false)} />
+      ) : null}
     </ScreenLayout>
   );
 }

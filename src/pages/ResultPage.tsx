@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Avatar } from '@/components/atoms/Avatar';
 import { Button } from '@/components/atoms/Button';
@@ -8,6 +8,7 @@ import { TallyList } from '@/components/organisms/TallyList';
 import { ScreenLayout } from '@/components/templates/ScreenLayout';
 import { tallyVotes } from '@/domain/gameEngine';
 import { cn } from '@/lib/cn';
+import { notifyReveal } from '@/lib/feedback';
 import { getPlayerDisplayName, useGameStore } from '@/store/useGameStore';
 
 function joinNames(names: readonly string[]): string {
@@ -24,6 +25,10 @@ export function ResultPage() {
   const outcome = useGameStore((state) => state.outcome);
   const playAgain = useGameStore((state) => state.playAgain);
   const backToSetup = useGameStore((state) => state.backToSetup);
+
+  useEffect(() => {
+    notifyReveal();
+  }, []);
 
   if (!round || !outcome) return null;
 
@@ -59,7 +64,10 @@ export function ResultPage() {
           <div className="font-display text-2xl font-extrabold text-red">{imposterNames}</div>
           <button
             type="button"
-            onClick={() => setStage('full')}
+            onClick={() => {
+              notifyReveal();
+              setStage('full');
+            }}
             className="mt-2 w-full max-w-[260px] rounded-2xl bg-amber px-4 py-4 font-display text-base font-bold text-amber-ink shadow-[0_12px_24px_-12px_oklch(75%_0.16_55_/_55%)]"
           >
             Reveal the Word

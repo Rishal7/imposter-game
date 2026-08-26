@@ -1,5 +1,5 @@
 import { Card } from '@/components/atoms/Card';
-import { ChevronDownIcon, TagIcon } from '@/components/icons';
+import { ChevronDownIcon, PlusIcon, TagIcon } from '@/components/icons';
 import { CategoryTile } from '@/components/molecules/CategoryTile';
 import type { Category } from '@/domain/types';
 import { cn } from '@/lib/cn';
@@ -7,21 +7,27 @@ import { cn } from '@/lib/cn';
 interface CategoryPickerProps {
   categories: readonly Category[];
   selectedIds: readonly string[];
+  customCategoryIds: readonly string[];
   open: boolean;
   onToggleOpen: () => void;
   onToggleCategory: (id: string) => void;
   onSelectAll: () => void;
   onClearAll: () => void;
+  onRemoveCategory: (id: string) => void;
+  onCreateCategory: () => void;
 }
 
 export function CategoryPicker({
   categories,
   selectedIds,
+  customCategoryIds,
   open,
   onToggleOpen,
   onToggleCategory,
   onSelectAll,
   onClearAll,
+  onRemoveCategory,
+  onCreateCategory,
 }: CategoryPickerProps) {
   return (
     <Card>
@@ -60,8 +66,17 @@ export function CategoryPicker({
                 wordCount={category.words.length}
                 selected={selectedIds.includes(category.id)}
                 onToggle={() => onToggleCategory(category.id)}
+                onRemove={customCategoryIds.includes(category.id) ? () => onRemoveCategory(category.id) : undefined}
               />
             ))}
+            <button
+              type="button"
+              onClick={onCreateCategory}
+              className="flex flex-col items-center justify-center gap-1 rounded-[14px] border border-dashed border-line/35 px-3 py-3 text-text-dim"
+            >
+              <PlusIcon width={15} height={15} />
+              <span className="text-[11px] font-bold">New pack</span>
+            </button>
           </div>
         </>
       ) : null}

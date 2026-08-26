@@ -6,6 +6,7 @@ import { PlayerAvatarGrid } from '@/components/organisms/PlayerAvatarGrid';
 import { RoleRevealCard } from '@/components/organisms/RoleRevealCard';
 import { ScreenLayout } from '@/components/templates/ScreenLayout';
 import { cn } from '@/lib/cn';
+import { notifyPeek } from '@/lib/feedback';
 import { getPlayerDisplayName, useGameStore } from '@/store/useGameStore';
 
 type View = { kind: 'grid' } | { kind: 'detail'; playerId: string };
@@ -71,7 +72,10 @@ export function RevealPage() {
               paletteIndex={index}
               teammateName={teammateName}
               revealed={revealed}
-              onReveal={() => setRevealed(true)}
+              onReveal={() => {
+                notifyPeek();
+                setRevealed(true);
+              }}
             />
           </div>
         </div>

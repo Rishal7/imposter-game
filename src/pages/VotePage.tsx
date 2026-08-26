@@ -6,6 +6,7 @@ import { HonorConfirm } from '@/components/organisms/HonorConfirm';
 import { PlayerAvatarGrid } from '@/components/organisms/PlayerAvatarGrid';
 import { VoteTargetList } from '@/components/organisms/VoteTargetList';
 import { ScreenLayout } from '@/components/templates/ScreenLayout';
+import { notifyVote } from '@/lib/feedback';
 import { getPlayerDisplayName, useGameStore } from '@/store/useGameStore';
 
 type View = { kind: 'grid' } | { kind: 'detail'; voterId: string };
@@ -25,7 +26,16 @@ export function VotePage() {
   if (voteView === 'honor') {
     return (
       <ScreenLayout header={<BackLink label="Back to voting" onClick={() => setVoteView('ballot')} />}>
-        <HonorConfirm onCaught={() => skipVotingWithOutcome(true)} onEscaped={() => skipVotingWithOutcome(false)} />
+        <HonorConfirm
+          onCaught={() => {
+            notifyVote();
+            skipVotingWithOutcome(true);
+          }}
+          onEscaped={() => {
+            notifyVote();
+            skipVotingWithOutcome(false);
+          }}
+        />
       </ScreenLayout>
     );
   }
@@ -63,6 +73,7 @@ export function VotePage() {
             disabled={!selectedTargetId}
             onClick={() => {
               if (!selectedTargetId) return;
+              notifyVote();
               castVote(voter.id, selectedTargetId);
               setView({ kind: 'grid' });
             }}
