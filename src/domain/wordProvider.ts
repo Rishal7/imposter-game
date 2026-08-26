@@ -24,7 +24,8 @@ export class StaticWordProvider implements WordProvider {
   }
 
   pickSecretWord(categoryIds: readonly string[], random: RandomSource): { category: Category; entry: WordEntry } {
-    const pool = this.categories.filter((category) => categoryIds.includes(category.id));
+    const selectedIds = new Set(categoryIds);
+    const pool = this.categories.filter((category) => selectedIds.has(category.id));
     if (pool.length === 0) {
       throw new Error('No categories selected to draw a word from.');
     }

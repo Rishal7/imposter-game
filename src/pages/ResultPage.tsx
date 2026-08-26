@@ -31,20 +31,18 @@ export function ResultPage() {
 
   if (!round || !outcome) return null;
 
+  const playerIndexById = new Map(players.map((player, index) => [player.id, index]));
+  const indexOf = (id: string): number => playerIndexById.get(id) ?? -1;
+
   const imposterNames = outcome.imposterIds.map((id) => {
-    const index = players.findIndex((player) => player.id === id);
+    const index = indexOf(id);
     return getPlayerDisplayName(players[index], index);
   });
   const imposterLabel = joinNames(imposterNames);
   const isPlural = imposterNames.length > 1;
   const won = outcome.imposterCaught;
-  const votedOutName =
-    outcome.votedOutId !== null
-      ? getPlayerDisplayName(
-          players[players.findIndex((player) => player.id === outcome.votedOutId)],
-          players.findIndex((player) => player.id === outcome.votedOutId),
-        )
-      : 'No one';
+  const votedOutIndex = outcome.votedOutId !== null ? indexOf(outcome.votedOutId) : -1;
+  const votedOutName = votedOutIndex >= 0 ? getPlayerDisplayName(players[votedOutIndex], votedOutIndex) : 'No one';
 
   const tally = tallyVotes(players, votes);
 
@@ -125,8 +123,8 @@ export function ResultPage() {
         {votes.length > 0 ? (
           <TallyList
             tally={tally}
-            nameFor={(id) => getPlayerDisplayName(players[players.findIndex((p) => p.id === id)], players.findIndex((p) => p.id === id))}
-            paletteIndexFor={(id) => players.findIndex((p) => p.id === id)}
+            nameFor={(id) => getPlayerDisplayName(players[indexOf(id)], indexOf(id))}
+            paletteIndexFor={indexOf}
           />
         ) : null}
       </div>

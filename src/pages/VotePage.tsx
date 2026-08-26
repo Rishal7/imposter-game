@@ -66,12 +66,13 @@ export function VotePage() {
       .map((player, index) => ({ player, paletteIndex: index, displayName: getPlayerDisplayName(player, index) }))
       .filter(({ player }) => player.id !== voter.id);
 
-    const confirmLabel = selectedTargetId
-      ? `Mark ${getPlayerDisplayName(
-          players[players.findIndex((player) => player.id === selectedTargetId)],
-          players.findIndex((player) => player.id === selectedTargetId),
-        )}`
-      : 'Pick a name';
+    const selectedTargetIndex = selectedTargetId
+      ? players.findIndex((player) => player.id === selectedTargetId)
+      : -1;
+    const confirmLabel =
+      selectedTargetId && selectedTargetIndex >= 0
+        ? `Mark ${getPlayerDisplayName(players[selectedTargetIndex], selectedTargetIndex)}`
+        : 'Pick a name';
 
     return (
       <ScreenLayout

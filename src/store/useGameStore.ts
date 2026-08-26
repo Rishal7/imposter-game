@@ -1,10 +1,12 @@
-import { create } from 'zustand';
+import { useMemo } from 'react';
+import { create, type StateCreator } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 import { assignRound, determineOutcome, MAX_PLAYERS, MIN_PLAYERS, tallyVotes, type Vote } from '@/domain/gameEngine';
 import { MathRandomSource } from '@/domain/random';
 import type { Category, GameSettings, Player, RoundAssignment, RoundOutcome, WordEntry } from '@/domain/types';
 import { StaticWordProvider } from '@/domain/wordProvider';
-import { loadCustomCategories, saveCustomCategories } from '@/lib/customCategoryStorage';
+import { CUSTOM_CATEGORIES_STORAGE_KEY, customCategoriesStorage } from '@/lib/customCategoryStorage';
 
 export type GamePhase = 'setup' | 'reveal' | 'discuss' | 'vote' | 'result';
 export type VoteView = 'ballot' | 'honor';
@@ -13,7 +15,6 @@ const random = new MathRandomSource();
 
 const CATEGORIES = new StaticWordProvider().getCategories();
 const DEFAULT_SELECTED_CATEGORY_IDS = CATEGORIES.slice(0, 3).map((category) => category.id);
-const INITIAL_CUSTOM_CATEGORIES = loadCustomCategories();
 
 let nextPlayerId = 0;
 const createPlayerId = (): string => `player-${(nextPlayerId += 1)}`;
@@ -62,11 +63,11 @@ interface GameState {
 
 const displayName = (player: Player, index: number): string => player.name.trim() || `Player ${index + 1}`;
 
-export const useGameStore = create<GameState>((set, get) => ({
+const createGameState: StateCreator<GameState> = (set, get) => ({
   phase: 'setup',
   players: createDefaultPlayers(),
   selectedCategoryIds: DEFAULT_SELECTED_CATEGORY_IDS,
-  customCategories: INITIAL_CUSTOM_CATEGORIES,
+  customCategories: [],
   settings: { imposterSeesCategory: false, imposterGetsHint: true, twoImposters: false },
   round: null,
   revealedPlayerIds: new Set(),
@@ -101,20 +102,17 @@ export const useGameStore = create<GameState>((set, get) => ({
   addCustomCategory: (name, words) =>
     set((state) => {
       const category: Category = { id: `custom-${crypto.randomUUID()}`, name: name.trim(), words };
-      const customCategories = [...state.customCategories, category];
-      saveCustomCategories(customCategories);
-      return { customCategories, selectedCategoryIds: [...state.selectedCategoryIds, category.id] };
+      return {
+        customCategories: [...state.customCategories, category],
+        selectedCategoryIds: [...state.selectedCategoryIds, category.id],
+      };
     }),
 
   removeCustomCategory: (id) =>
-    set((state) => {
-      const customCategories = state.customCategories.filter((category) => category.id !== id);
-      saveCustomCategories(customCategories);
-      return {
-        customCategories,
-        selectedCategoryIds: state.selectedCategoryIds.filter((categoryId) => categoryId !== id),
-      };
-    }),
+    set((state) => ({
+      customCategories: state.customCategories.filter((category) => category.id !== id),
+      selectedCategoryIds: state.selectedCategoryIds.filter((categoryId) => categoryId !== id),
+    })),
 
   toggleImposterSeesCategory: () =>
     set((state) => ({ settings: { ...state.settings, imposterSeesCategory: !state.settings.imposterSeesCategory } })),
@@ -172,7 +170,20 @@ export const useGameStore = create<GameState>((set, get) => ({
   playAgain: () => get().startGame(),
 
   backToSetup: () => set({ phase: 'setup', round: null, votes: [], outcome: null }),
-}));
+});
+
+/**
+ * Custom word packs are the only slice that should survive a reload —
+ * players, round, and votes intentionally reset every session. `persist`
+ * hydrates that slice from localStorage synchronously before first render.
+ */
+export const useGameStore = create<GameState>()(
+  persist(createGameState, {
+    name: CUSTOM_CATEGORIES_STORAGE_KEY,
+    storage: customCategoriesStorage,
+    partialize: (state) => ({ customCategories: state.customCategories as Category[] }),
+  }),
+);
 
 export const getCategories = () => CATEGORIES;
 export const getPlayerDisplayName = displayName;
@@ -180,5 +191,5 @@ export const getPlayerDisplayName = displayName;
 /** Built-in categories plus whatever custom word packs the player has saved. */
 export const useAllCategories = (): readonly Category[] => {
   const customCategories = useGameStore((state) => state.customCategories);
-  return [...CATEGORIES, ...customCategories];
+  return useMemo(() => [...CATEGORIES, ...customCategories], [customCategories]);
 };
