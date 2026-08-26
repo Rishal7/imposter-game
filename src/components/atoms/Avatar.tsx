@@ -6,10 +6,10 @@ import { cn } from '@/lib/cn';
 type AvatarSize = 'sm' | 'md' | 'lg' | 'xl';
 
 const SIZE_CLASSES: Record<AvatarSize, string> = {
-  sm: 'h-7 w-7 text-[11px]',
-  md: 'h-10 w-10 text-sm',
-  lg: 'h-14 w-14 text-lg sm:h-16 sm:w-16 sm:text-xl md:h-[72px] md:w-[72px] md:text-2xl',
-  xl: 'h-16 w-16 text-2xl md:h-20 md:w-20 md:text-3xl',
+  sm: 'h-7 w-7 text-[11px] cut-sm cut',
+  md: 'h-10 w-10 text-sm cut-sm cut',
+  lg: 'h-14 w-14 text-lg sm:h-16 sm:w-16 sm:text-xl md:h-[72px] md:w-[72px] md:text-2xl cut',
+  xl: 'h-16 w-16 text-2xl md:h-20 md:w-20 md:text-3xl cut',
 };
 
 interface AvatarProps {
@@ -28,7 +28,7 @@ export function Avatar({ name, paletteIndex, size = 'md', ring = 'none', badge, 
     <div className={cn('relative shrink-0', className)}>
       <div
         className={cn(
-          'flex items-center justify-center rounded-[28%] font-display font-extrabold text-white',
+          'flex items-center justify-center font-display font-extrabold text-white',
           SIZE_CLASSES[size],
           ring === 'danger' && 'shadow-[0_0_0_4px_oklch(66%_0.22_345_/_16%)] ring-3 ring-danger',
         )}
