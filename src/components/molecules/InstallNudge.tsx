@@ -1,17 +1,25 @@
-import { ShareIcon, XIcon } from '@/components/icons';
+import type { ReactNode } from 'react';
+
+import { XIcon } from '@/components/icons';
 
 interface InstallNudgeProps {
+  icon: ReactNode;
+  message: ReactNode;
+  actionLabel?: string;
+  onAction?: () => void;
   onDismiss: () => void;
 }
 
-export function InstallNudge({ onDismiss }: InstallNudgeProps) {
+export function InstallNudge({ icon, message, actionLabel, onAction, onDismiss }: InstallNudgeProps) {
   return (
     <div className="cut-sm cut mx-6 mt-4 flex items-center gap-3 border border-primary/30 bg-primary/10 px-4 py-3">
-      <ShareIcon width={18} height={18} className="shrink-0 text-primary" />
-      <p className="flex-1 text-[12.5px] leading-snug text-text">
-        Install this app — tap <span className="font-bold text-primary">Share</span> then{' '}
-        <span className="font-bold text-primary">Add to Home Screen</span>.
-      </p>
+      <span className="shrink-0 text-primary">{icon}</span>
+      <p className="flex-1 text-[12.5px] leading-snug text-text">{message}</p>
+      {actionLabel && onAction ? (
+        <button type="button" onClick={onAction} className="shrink-0 text-[12px] font-bold text-primary">
+          {actionLabel}
+        </button>
+      ) : null}
       <button
         type="button"
         onClick={onDismiss}

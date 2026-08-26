@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { BrandMark } from '@/components/atoms/BrandMark';
 import { Button } from '@/components/atoms/Button';
-import { ArrowRightIcon, PlayIcon } from '@/components/icons';
+import { ArrowRightIcon, DownloadIcon, PlayIcon, ShareIcon } from '@/components/icons';
 import { InstallNudge } from '@/components/molecules/InstallNudge';
 import { SettingToggle } from '@/components/molecules/SettingToggle';
 import { CategoryPicker } from '@/components/organisms/CategoryPicker';
@@ -10,6 +10,12 @@ import { CustomCategoryModal } from '@/components/organisms/CustomCategoryModal'
 import { PlayerListEditor } from '@/components/organisms/PlayerListEditor';
 import { ScreenLayout } from '@/components/templates/ScreenLayout';
 import { MAX_PLAYERS, MIN_PLAYERS, MIN_PLAYERS_FOR_TWO_IMPOSTERS } from '@/domain/gameEngine';
+import {
+  dismissAndroidInstallNudge,
+  onAndroidInstallPromptChange,
+  shouldShowAndroidInstallNudge,
+  triggerAndroidInstallPrompt,
+} from '@/lib/androidInstallPrompt';
 import { cn } from '@/lib/cn';
 import { dismissIosInstallNudge, shouldShowIosInstallNudge } from '@/lib/installNudge';
 import { useAllCategories, useGameStore } from '@/store/useGameStore';
@@ -22,7 +28,13 @@ const STEPS = [
 export function SetupPage() {
   const [step, setStep] = useState<1 | 2>(1);
   const [creatingCategory, setCreatingCategory] = useState(false);
-  const [showInstallNudge, setShowInstallNudge] = useState(() => shouldShowIosInstallNudge());
+  const [showIosInstallNudge, setShowIosInstallNudge] = useState(() => shouldShowIosInstallNudge());
+  const [showAndroidInstallNudge, setShowAndroidInstallNudge] = useState(() => shouldShowAndroidInstallNudge());
+
+  useEffect(
+    () => onAndroidInstallPromptChange(() => setShowAndroidInstallNudge(shouldShowAndroidInstallNudge())),
+    [],
+  );
 
   const players = useGameStore((state) => state.players);
   const selectedCategoryIds = useGameStore((state) => state.selectedCategoryIds);
@@ -93,11 +105,34 @@ export function SetupPage() {
         )
       }
     >
-      {showInstallNudge ? (
+      {showIosInstallNudge ? (
         <InstallNudge
+          icon={<ShareIcon width={18} height={18} />}
+          message={
+            <>
+              Install this app — tap <span className="font-bold text-primary">Share</span> then{' '}
+              <span className="font-bold text-primary">Add to Home Screen</span>.
+            </>
+          }
           onDismiss={() => {
             dismissIosInstallNudge();
-            setShowInstallNudge(false);
+            setShowIosInstallNudge(false);
+          }}
+        />
+      ) : null}
+
+      {showAndroidInstallNudge ? (
+        <InstallNudge
+          icon={<DownloadIcon width={18} height={18} />}
+          message="Install this app for quick access and a full-screen experience."
+          actionLabel="Install"
+          onAction={async () => {
+            await triggerAndroidInstallPrompt();
+            setShowAndroidInstallNudge(false);
+          }}
+          onDismiss={() => {
+            dismissAndroidInstallNudge();
+            setShowAndroidInstallNudge(false);
           }}
         />
       ) : null}
