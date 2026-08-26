@@ -19,6 +19,17 @@ const DEFAULT_SELECTED_CATEGORY_IDS = CATEGORIES.slice(0, 3).map((category) => c
 let nextPlayerId = 0;
 const createPlayerId = (): string => `player-${(nextPlayerId += 1)}`;
 
+/**
+ * Called after hydration restores a persisted roster, so freshly-created
+ * players in this session never reuse an id a restored player already has.
+ */
+const resyncNextPlayerId = (players: readonly Player[]): void => {
+  for (const player of players) {
+    const match = /^player-(\d+)$/.exec(player.id);
+    if (match) nextPlayerId = Math.max(nextPlayerId, Number(match[1]));
+  }
+};
+
 const createDefaultPlayers = (): Player[] => [
   { id: createPlayerId(), name: '' },
   { id: createPlayerId(), name: '' },
@@ -173,10 +184,11 @@ const createGameState: StateCreator<GameState> = (set, get) => ({
 });
 
 /**
- * Custom word packs and rule settings are the only slices that should
- * survive a reload — players, round, and votes intentionally reset every
- * session. `persist` hydrates them from localStorage synchronously before
- * first render.
+ * Custom word packs, rule settings, and the player roster survive a
+ * reload — round, votes, and phase intentionally reset every session.
+ * `persist` hydrates them from localStorage synchronously before first
+ * render; `onRehydrateStorage` then resyncs the id counter so a player
+ * added in a new session never collides with a restored id.
  */
 export const useGameStore = create<GameState>()(
   persist(createGameState, {
@@ -185,7 +197,11 @@ export const useGameStore = create<GameState>()(
     partialize: (state) => ({
       customCategories: state.customCategories as Category[],
       settings: state.settings,
+      players: state.players as Player[],
     }),
+    onRehydrateStorage: () => (state) => {
+      if (state) resyncNextPlayerId(state.players);
+    },
   }),
 );
 
