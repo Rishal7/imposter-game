@@ -2,7 +2,7 @@ name: Deploy to Cloudflare Pages
 
 on:
   push:
-    branches: [main, ui-redesign]
+    branches: [ui-redesign]
   workflow_dispatch:
 
 concurrency:
