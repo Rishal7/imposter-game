@@ -4,6 +4,7 @@ import { Button } from '@/components/atoms/Button';
 import { XIcon } from '@/components/icons';
 import type { PlayerRole } from '@/domain/types';
 import { cn } from '@/lib/cn';
+import { notifyPeek } from '@/lib/feedback';
 
 import { RevealFlood } from './RevealFlood';
 
@@ -36,7 +37,10 @@ export function PeekModal({ name, role, categoryName, teammateName, onClose }: P
           categoryName={categoryName}
           teammateName={teammateName}
           revealed={revealed}
-          onReveal={() => setRevealed(true)}
+          onReveal={() => {
+            notifyPeek();
+            setRevealed(true);
+          }}
         />
       </div>
 

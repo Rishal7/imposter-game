@@ -7,6 +7,7 @@ import { BallotList } from '@/components/organisms/BallotList';
 import { HonorConfirm } from '@/components/organisms/HonorConfirm';
 import { PlayerTicketList } from '@/components/organisms/PlayerTicketList';
 import { ScreenLayout } from '@/components/templates/ScreenLayout';
+import { notifyVote } from '@/lib/feedback';
 import { getPlayerDisplayName, useGameStore } from '@/store/useGameStore';
 
 type View = { kind: 'list' } | { kind: 'detail'; voterId: string };
@@ -34,7 +35,16 @@ export function VotePage() {
           </div>
         }
       >
-        <HonorConfirm onCaught={() => skipVotingWithOutcome(true)} onEscaped={() => skipVotingWithOutcome(false)} />
+        <HonorConfirm
+          onCaught={() => {
+            notifyVote();
+            skipVotingWithOutcome(true);
+          }}
+          onEscaped={() => {
+            notifyVote();
+            skipVotingWithOutcome(false);
+          }}
+        />
       </ScreenLayout>
     );
   }
@@ -79,6 +89,7 @@ export function VotePage() {
             disabled={!selectedTargetId}
             onClick={() => {
               if (!selectedTargetId) return;
+              notifyVote();
               castVote(voter.id, selectedTargetId);
               setView({ kind: 'list' });
             }}

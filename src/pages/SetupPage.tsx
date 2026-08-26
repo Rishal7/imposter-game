@@ -5,11 +5,12 @@ import { Button } from '@/components/atoms/Button';
 import { ArrowRightIcon, PlayIcon } from '@/components/icons';
 import { SettingToggle } from '@/components/molecules/SettingToggle';
 import { CategoryPicker } from '@/components/organisms/CategoryPicker';
+import { CustomCategoryModal } from '@/components/organisms/CustomCategoryModal';
 import { PlayerListEditor } from '@/components/organisms/PlayerListEditor';
 import { ScreenLayout } from '@/components/templates/ScreenLayout';
 import { MAX_PLAYERS, MIN_PLAYERS, MIN_PLAYERS_FOR_TWO_IMPOSTERS } from '@/domain/gameEngine';
 import { cn } from '@/lib/cn';
-import { getCategories, useGameStore } from '@/store/useGameStore';
+import { useAllCategories, useGameStore } from '@/store/useGameStore';
 
 const STEPS = [
   { step: 1, label: 'Crew' },
@@ -18,20 +19,25 @@ const STEPS = [
 
 export function SetupPage() {
   const [step, setStep] = useState<1 | 2>(1);
+  const [creatingCategory, setCreatingCategory] = useState(false);
 
   const players = useGameStore((state) => state.players);
   const selectedCategoryIds = useGameStore((state) => state.selectedCategoryIds);
+  const customCategories = useGameStore((state) => state.customCategories);
   const settings = useGameStore((state) => state.settings);
   const addPlayer = useGameStore((state) => state.addPlayer);
   const removePlayer = useGameStore((state) => state.removePlayer);
   const renamePlayer = useGameStore((state) => state.renamePlayer);
   const toggleCategory = useGameStore((state) => state.toggleCategory);
+  const addCustomCategory = useGameStore((state) => state.addCustomCategory);
+  const removeCustomCategory = useGameStore((state) => state.removeCustomCategory);
   const toggleImposterSeesCategory = useGameStore((state) => state.toggleImposterSeesCategory);
   const toggleImposterGetsHint = useGameStore((state) => state.toggleImposterGetsHint);
   const toggleTwoImposters = useGameStore((state) => state.toggleTwoImposters);
   const startGame = useGameStore((state) => state.startGame);
 
-  const categories = getCategories();
+  const categories = useAllCategories();
+  const customCategoryIds = customCategories.map((category) => category.id);
   const canStart = players.length >= MIN_PLAYERS && selectedCategoryIds.length > 0;
 
   return (
@@ -106,7 +112,14 @@ export function SetupPage() {
             <p className="text-[13px] text-text-dim">Choose a word pack and how much rope to give the imposter.</p>
           </div>
 
-          <CategoryPicker categories={categories} selectedIds={selectedCategoryIds} onToggleCategory={toggleCategory} />
+          <CategoryPicker
+            categories={categories}
+            selectedIds={selectedCategoryIds}
+            customCategoryIds={customCategoryIds}
+            onToggleCategory={toggleCategory}
+            onRemoveCategory={removeCustomCategory}
+            onCreateCategory={() => setCreatingCategory(true)}
+          />
 
           <div className="flex flex-col">
             <SettingToggle
@@ -136,6 +149,10 @@ export function SetupPage() {
           </div>
         </div>
       )}
+
+      {creatingCategory ? (
+        <CustomCategoryModal onSave={addCustomCategory} onClose={() => setCreatingCategory(false)} />
+      ) : null}
     </ScreenLayout>
   );
 }

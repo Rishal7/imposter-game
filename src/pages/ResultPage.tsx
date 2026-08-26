@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { BrandMark } from '@/components/atoms/BrandMark';
 import { Button } from '@/components/atoms/Button';
@@ -7,6 +7,7 @@ import { TallyList } from '@/components/organisms/TallyList';
 import { ScreenLayout } from '@/components/templates/ScreenLayout';
 import { tallyVotes } from '@/domain/gameEngine';
 import { cn } from '@/lib/cn';
+import { notifyReveal } from '@/lib/feedback';
 import { getPlayerDisplayName, useGameStore } from '@/store/useGameStore';
 
 function joinNames(names: readonly string[]): string {
@@ -23,6 +24,10 @@ export function ResultPage() {
   const outcome = useGameStore((state) => state.outcome);
   const playAgain = useGameStore((state) => state.playAgain);
   const backToSetup = useGameStore((state) => state.backToSetup);
+
+  useEffect(() => {
+    notifyReveal();
+  }, []);
 
   if (!round || !outcome) return null;
 
@@ -52,7 +57,13 @@ export function ResultPage() {
           </div>
         }
         footer={
-          <Button variant="danger" onClick={() => setStage('full')}>
+          <Button
+            variant="danger"
+            onClick={() => {
+              notifyReveal();
+              setStage('full');
+            }}
+          >
             Reveal the word
           </Button>
         }

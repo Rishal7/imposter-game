@@ -2,17 +2,18 @@ import { create } from 'zustand';
 
 import { assignRound, determineOutcome, MAX_PLAYERS, MIN_PLAYERS, tallyVotes, type Vote } from '@/domain/gameEngine';
 import { MathRandomSource } from '@/domain/random';
-import type { GameSettings, Player, RoundAssignment, RoundOutcome } from '@/domain/types';
+import type { Category, GameSettings, Player, RoundAssignment, RoundOutcome, WordEntry } from '@/domain/types';
 import { StaticWordProvider } from '@/domain/wordProvider';
+import { loadCustomCategories, saveCustomCategories } from '@/lib/customCategoryStorage';
 
 export type GamePhase = 'setup' | 'reveal' | 'discuss' | 'vote' | 'result';
 export type VoteView = 'ballot' | 'honor';
 
-const wordProvider = new StaticWordProvider();
 const random = new MathRandomSource();
 
-const CATEGORIES = wordProvider.getCategories();
+const CATEGORIES = new StaticWordProvider().getCategories();
 const DEFAULT_SELECTED_CATEGORY_IDS = CATEGORIES.slice(0, 3).map((category) => category.id);
+const INITIAL_CUSTOM_CATEGORIES = loadCustomCategories();
 
 let nextPlayerId = 0;
 const createPlayerId = (): string => `player-${(nextPlayerId += 1)}`;
@@ -27,6 +28,7 @@ interface GameState {
   readonly phase: GamePhase;
   readonly players: readonly Player[];
   readonly selectedCategoryIds: readonly string[];
+  readonly customCategories: readonly Category[];
   readonly settings: GameSettings;
   readonly round: RoundAssignment | null;
   readonly revealedPlayerIds: ReadonlySet<string>;
@@ -38,6 +40,8 @@ interface GameState {
   removePlayer(id: string): void;
   renamePlayer(id: string, name: string): void;
   toggleCategory(id: string): void;
+  addCustomCategory(name: string, words: readonly WordEntry[]): void;
+  removeCustomCategory(id: string): void;
   toggleImposterSeesCategory(): void;
   toggleImposterGetsHint(): void;
   toggleTwoImposters(): void;
@@ -62,6 +66,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   phase: 'setup',
   players: createDefaultPlayers(),
   selectedCategoryIds: DEFAULT_SELECTED_CATEGORY_IDS,
+  customCategories: INITIAL_CUSTOM_CATEGORIES,
   settings: { imposterSeesCategory: false, imposterGetsHint: true, twoImposters: false },
   round: null,
   revealedPlayerIds: new Set(),
@@ -93,6 +98,24 @@ export const useGameStore = create<GameState>((set, get) => ({
         : [...state.selectedCategoryIds, id],
     })),
 
+  addCustomCategory: (name, words) =>
+    set((state) => {
+      const category: Category = { id: `custom-${crypto.randomUUID()}`, name: name.trim(), words };
+      const customCategories = [...state.customCategories, category];
+      saveCustomCategories(customCategories);
+      return { customCategories, selectedCategoryIds: [...state.selectedCategoryIds, category.id] };
+    }),
+
+  removeCustomCategory: (id) =>
+    set((state) => {
+      const customCategories = state.customCategories.filter((category) => category.id !== id);
+      saveCustomCategories(customCategories);
+      return {
+        customCategories,
+        selectedCategoryIds: state.selectedCategoryIds.filter((categoryId) => categoryId !== id),
+      };
+    }),
+
   toggleImposterSeesCategory: () =>
     set((state) => ({ settings: { ...state.settings, imposterSeesCategory: !state.settings.imposterSeesCategory } })),
 
@@ -103,7 +126,8 @@ export const useGameStore = create<GameState>((set, get) => ({
     set((state) => ({ settings: { ...state.settings, twoImposters: !state.settings.twoImposters } })),
 
   startGame: () => {
-    const { players, selectedCategoryIds, settings } = get();
+    const { players, selectedCategoryIds, customCategories, settings } = get();
+    const wordProvider = new StaticWordProvider([...CATEGORIES, ...customCategories]);
     const round = assignRound({
       players,
       categoryIds: selectedCategoryIds,
@@ -152,3 +176,9 @@ export const useGameStore = create<GameState>((set, get) => ({
 
 export const getCategories = () => CATEGORIES;
 export const getPlayerDisplayName = displayName;
+
+/** Built-in categories plus whatever custom word packs the player has saved. */
+export const useAllCategories = (): readonly Category[] => {
+  const customCategories = useGameStore((state) => state.customCategories);
+  return [...CATEGORIES, ...customCategories];
+};
