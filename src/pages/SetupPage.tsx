@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { BrandMark } from '@/components/atoms/BrandMark';
 import { Button } from '@/components/atoms/Button';
 import { ArrowRightIcon, PlayIcon } from '@/components/icons';
+import { InstallNudge } from '@/components/molecules/InstallNudge';
 import { SettingToggle } from '@/components/molecules/SettingToggle';
 import { CategoryPicker } from '@/components/organisms/CategoryPicker';
 import { CustomCategoryModal } from '@/components/organisms/CustomCategoryModal';
@@ -10,6 +11,7 @@ import { PlayerListEditor } from '@/components/organisms/PlayerListEditor';
 import { ScreenLayout } from '@/components/templates/ScreenLayout';
 import { MAX_PLAYERS, MIN_PLAYERS, MIN_PLAYERS_FOR_TWO_IMPOSTERS } from '@/domain/gameEngine';
 import { cn } from '@/lib/cn';
+import { dismissIosInstallNudge, shouldShowIosInstallNudge } from '@/lib/installNudge';
 import { useAllCategories, useGameStore } from '@/store/useGameStore';
 
 const STEPS = [
@@ -20,6 +22,7 @@ const STEPS = [
 export function SetupPage() {
   const [step, setStep] = useState<1 | 2>(1);
   const [creatingCategory, setCreatingCategory] = useState(false);
+  const [showInstallNudge, setShowInstallNudge] = useState(() => shouldShowIosInstallNudge());
 
   const players = useGameStore((state) => state.players);
   const selectedCategoryIds = useGameStore((state) => state.selectedCategoryIds);
@@ -90,6 +93,15 @@ export function SetupPage() {
         )
       }
     >
+      {showInstallNudge ? (
+        <InstallNudge
+          onDismiss={() => {
+            dismissIosInstallNudge();
+            setShowInstallNudge(false);
+          }}
+        />
+      ) : null}
+
       {step === 1 ? (
         <div className="flex flex-col gap-1 px-6 pb-2 pt-5">
           <div className="text-[11px] font-bold uppercase tracking-widest text-accent">Step 1</div>
