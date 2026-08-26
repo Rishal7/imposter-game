@@ -1,8 +1,8 @@
 import { useState } from 'react';
 
+import { BrandMark } from '@/components/atoms/BrandMark';
 import { Button } from '@/components/atoms/Button';
-import { IconTile } from '@/components/atoms/IconTile';
-import { ArrowRightIcon, PlayIcon, ShieldMaskIcon } from '@/components/icons';
+import { ArrowRightIcon, PlayIcon } from '@/components/icons';
 import { SettingToggle } from '@/components/molecules/SettingToggle';
 import { CategoryPicker } from '@/components/organisms/CategoryPicker';
 import { PlayerListEditor } from '@/components/organisms/PlayerListEditor';
@@ -39,9 +39,7 @@ export function SetupPage() {
       header={
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2.5 px-6">
-            <IconTile size={30}>
-              <ShieldMaskIcon width={15} height={15} strokeWidth={2.4} />
-            </IconTile>
+            <BrandMark size={30} />
             <div className="font-display text-sm font-extrabold tracking-wide">IMPOSTER</div>
           </div>
           <div className="flex px-6">

@@ -1,4 +1,5 @@
 import { BackLink } from '@/components/atoms/BackLink';
+import { BrandMark } from '@/components/atoms/BrandMark';
 import { Button } from '@/components/atoms/Button';
 import { CheckIcon } from '@/components/icons';
 import { ScreenLayout } from '@/components/templates/ScreenLayout';
@@ -11,7 +12,12 @@ export function DiscussPage() {
 
   return (
     <ScreenLayout
-      header={<BackLink onClick={goToReveal} />}
+      header={
+        <div className="flex items-center justify-between px-6">
+          <BackLink onClick={goToReveal} />
+          <BrandMark size={26} />
+        </div>
+      }
       footer={
         <div className="flex flex-col items-center gap-3.5">
           <Button onClick={goToVote}>

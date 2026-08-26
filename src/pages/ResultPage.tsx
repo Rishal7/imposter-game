@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { BrandMark } from '@/components/atoms/BrandMark';
 import { Button } from '@/components/atoms/Button';
 import { RestartIcon } from '@/components/icons';
 import { TallyList } from '@/components/organisms/TallyList';
@@ -45,6 +46,11 @@ export function ResultPage() {
   if (stage === 'imposter') {
     return (
       <ScreenLayout
+        header={
+          <div className="px-6">
+            <BrandMark size={26} />
+          </div>
+        }
         footer={
           <Button variant="danger" onClick={() => setStage('full')}>
             Reveal the word
@@ -65,6 +71,11 @@ export function ResultPage() {
 
   return (
     <ScreenLayout
+      header={
+        <div className="px-6">
+          <BrandMark size={26} />
+        </div>
+      }
       footer={
         <div className="flex flex-col items-center gap-2.5">
           <Button onClick={playAgain}>

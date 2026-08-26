@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { BackLink } from '@/components/atoms/BackLink';
+import { BrandMark } from '@/components/atoms/BrandMark';
 import { Button } from '@/components/atoms/Button';
 import { BallotList } from '@/components/organisms/BallotList';
 import { HonorConfirm } from '@/components/organisms/HonorConfirm';
@@ -21,10 +22,18 @@ export function VotePage() {
   const castVote = useGameStore((state) => state.castVote);
   const finishVoting = useGameStore((state) => state.finishVoting);
   const skipVotingWithOutcome = useGameStore((state) => state.skipVotingWithOutcome);
+  const goToDiscuss = useGameStore((state) => state.goToDiscuss);
 
   if (voteView === 'honor') {
     return (
-      <ScreenLayout header={<BackLink label="Back to voting" onClick={() => setVoteView('ballot')} />}>
+      <ScreenLayout
+        header={
+          <div className="flex items-center justify-between px-6">
+            <BackLink label="Back to voting" onClick={() => setVoteView('ballot')} />
+            <BrandMark size={26} />
+          </div>
+        }
+      >
         <HonorConfirm onCaught={() => skipVotingWithOutcome(true)} onEscaped={() => skipVotingWithOutcome(false)} />
       </ScreenLayout>
     );
@@ -89,6 +98,12 @@ export function VotePage() {
 
   return (
     <ScreenLayout
+      header={
+        <div className="flex items-center justify-between px-6">
+          <BackLink onClick={goToDiscuss} />
+          <BrandMark size={26} />
+        </div>
+      }
       footer={
         <div className="flex flex-col items-center gap-3">
           <Button variant="danger" onClick={finishVoting} disabled={!allVoted}>
