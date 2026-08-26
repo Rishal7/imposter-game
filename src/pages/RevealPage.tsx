@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { BackLink } from '@/components/atoms/BackLink';
 import { Button } from '@/components/atoms/Button';
 import { PeekModal } from '@/components/organisms/PeekModal';
 import { PlayerTicketList } from '@/components/organisms/PlayerTicketList';
@@ -14,6 +15,7 @@ export function RevealPage() {
   const revealedPlayerIds = useGameStore((state) => state.revealedPlayerIds);
   const markRevealed = useGameStore((state) => state.markRevealed);
   const goToDiscuss = useGameStore((state) => state.goToDiscuss);
+  const backToSetup = useGameStore((state) => state.backToSetup);
 
   if (!round) return null;
 
@@ -31,6 +33,7 @@ export function RevealPage() {
 
   return (
     <ScreenLayout
+      header={<BackLink label="Back to setup" onClick={backToSetup} />}
       footer={
         <div className="flex flex-col items-center gap-2">
           <Button onClick={goToDiscuss} disabled={!allRevealed}>
