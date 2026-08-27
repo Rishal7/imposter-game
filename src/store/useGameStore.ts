@@ -2,7 +2,16 @@ import { useMemo } from 'react';
 import { create, type StateCreator } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-import { assignRound, determineOutcome, MAX_PLAYERS, MIN_PLAYERS, tallyVotes, type Vote } from '@/domain/gameEngine';
+import {
+  assignRound,
+  determineOutcome,
+  MAX_PLAYERS,
+  MIN_PLAYERS,
+  recordRoundInScoreboard,
+  tallyVotes,
+  type Scoreboard,
+  type Vote,
+} from '@/domain/gameEngine';
 import { MathRandomSource } from '@/domain/random';
 import type { Category, GameSettings, Player, RoundAssignment, RoundOutcome, WordEntry } from '@/domain/types';
 import { StaticWordProvider } from '@/domain/wordProvider';
@@ -51,6 +60,8 @@ interface GameState {
   readonly outcome: RoundOutcome | null;
   /** The last few secret words drawn, so a new round can steer away from repeats. Not persisted. */
   readonly recentWords: readonly string[];
+  /** Running tally for the night — folded in after every round's outcome. Not persisted. */
+  readonly scoreboard: Scoreboard;
 
   addPlayer(): void;
   removePlayer(id: string): void;
@@ -75,6 +86,7 @@ interface GameState {
   skipVotingWithOutcome(imposterCaught: boolean): void;
   playAgain(): void;
   backToSetup(): void;
+  resetScoreboard(): void;
 }
 
 const displayName = (player: Player, index: number): string => player.name.trim() || `Player ${index + 1}`;
@@ -91,6 +103,7 @@ const createGameState: StateCreator<GameState> = (set, get) => ({
   voteView: 'ballot',
   outcome: null,
   recentWords: [],
+  scoreboard: new Map(),
 
   addPlayer: () =>
     set((state) => {
@@ -184,25 +197,26 @@ const createGameState: StateCreator<GameState> = (set, get) => ({
     })),
 
   finishVoting: () => {
-    const { players, votes, round } = get();
+    const { players, votes, round, scoreboard } = get();
     if (!round) return;
     const [topResult] = tallyVotes(players, votes);
     const votedOutId = topResult && topResult.votes > 0 ? topResult.playerId : null;
-    set({ outcome: determineOutcome(votedOutId, round.imposterIds), phase: 'result' });
+    const outcome = determineOutcome(votedOutId, round.imposterIds);
+    set({ outcome, phase: 'result', scoreboard: recordRoundInScoreboard(scoreboard, players, round, outcome, votes) });
   },
 
   skipVotingWithOutcome: (imposterCaught) => {
-    const { round } = get();
+    const { players, votes, round, scoreboard } = get();
     if (!round) return;
-    set({
-      outcome: { votedOutId: null, imposterIds: round.imposterIds, imposterCaught },
-      phase: 'result',
-    });
+    const outcome: RoundOutcome = { votedOutId: null, imposterIds: round.imposterIds, imposterCaught };
+    set({ outcome, phase: 'result', scoreboard: recordRoundInScoreboard(scoreboard, players, round, outcome, votes) });
   },
 
   playAgain: () => get().startGame(),
 
   backToSetup: () => set({ phase: 'setup', round: null, votes: [], outcome: null }),
+
+  resetScoreboard: () => set({ scoreboard: new Map() }),
 });
 
 /**

@@ -81,6 +81,28 @@ export function XIcon(props: IconProps) {
   );
 }
 
+export function TrophyIcon(props: IconProps) {
+  return (
+    <svg {...withDefaults(props)}>
+      <path
+        d="M7 4h10v5a5 5 0 0 1-10 0V4Z"
+        stroke="currentColor"
+        strokeWidth={1.7}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M7 5H4.5A1.5 1.5 0 0 0 3 6.5 3.5 3.5 0 0 0 6.5 10H7M17 5h2.5A1.5 1.5 0 0 1 21 6.5 3.5 3.5 0 0 1 17.5 10H17"
+        stroke="currentColor"
+        strokeWidth={1.7}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M12 14v3.5M9 21h6M9.5 17.5h5l.6 3.5h-6.2l.6-3.5Z" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export function EditIcon(props: IconProps) {
   return (
     <svg {...withDefaults(props)}>

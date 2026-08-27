@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { BrandMark } from '@/components/atoms/BrandMark';
 import { Button } from '@/components/atoms/Button';
-import { ArrowRightIcon, DownloadIcon, InfoIcon, PlayIcon, ShareIcon } from '@/components/icons';
+import { ArrowRightIcon, DownloadIcon, InfoIcon, PlayIcon, ShareIcon, TrophyIcon } from '@/components/icons';
 import { ConfirmDialog } from '@/components/molecules/ConfirmDialog';
 import { InstallNudge } from '@/components/molecules/InstallNudge';
 import { SettingToggle } from '@/components/molecules/SettingToggle';
@@ -10,6 +10,7 @@ import { CategoryPicker } from '@/components/organisms/CategoryPicker';
 import { CustomCategoryModal } from '@/components/organisms/CustomCategoryModal';
 import { HowToPlayModal } from '@/components/organisms/HowToPlayModal';
 import { PlayerListEditor } from '@/components/organisms/PlayerListEditor';
+import { ScoreboardModal } from '@/components/organisms/ScoreboardModal';
 import { ScreenLayout } from '@/components/templates/ScreenLayout';
 import { MAX_PLAYERS, MIN_PLAYERS, MIN_PLAYERS_FOR_TWO_IMPOSTERS } from '@/domain/gameEngine';
 import type { Category } from '@/domain/types';
@@ -38,6 +39,7 @@ export function SetupPage() {
   const [showIosInstallNudge, setShowIosInstallNudge] = useState(() => shouldShowIosInstallNudge());
   const [showAndroidInstallNudge, setShowAndroidInstallNudge] = useState(() => shouldShowAndroidInstallNudge());
   const [showHowToPlay, setShowHowToPlay] = useState(() => !hasSeenHowToPlay());
+  const [showScoreboard, setShowScoreboard] = useState(false);
 
   useEffect(
     () => onAndroidInstallPromptChange(() => setShowAndroidInstallNudge(shouldShowAndroidInstallNudge())),
@@ -59,6 +61,8 @@ export function SetupPage() {
   const toggleImposterGetsHint = useGameStore((state) => state.toggleImposterGetsHint);
   const toggleTwoImposters = useGameStore((state) => state.toggleTwoImposters);
   const startGame = useGameStore((state) => state.startGame);
+  const scoreboard = useGameStore((state) => state.scoreboard);
+  const resetScoreboard = useGameStore((state) => state.resetScoreboard);
 
   const categories = useAllCategories();
   const customCategoryIds = customCategories.map((category) => category.id);
@@ -73,14 +77,24 @@ export function SetupPage() {
               <BrandMark size={30} />
               <div className="font-display text-sm font-extrabold tracking-wide">IMPOSTER</div>
             </div>
-            <button
-              type="button"
-              onClick={() => setShowHowToPlay(true)}
-              aria-label="How to play"
-              className="p-1 text-text-dim"
-            >
-              <InfoIcon width={20} height={20} />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setShowScoreboard(true)}
+                aria-label="Scoreboard"
+                className="p-1 text-text-dim"
+              >
+                <TrophyIcon width={20} height={20} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowHowToPlay(true)}
+                aria-label="How to play"
+                className="p-1 text-text-dim"
+              >
+                <InfoIcon width={20} height={20} />
+              </button>
+            </div>
           </div>
           <div className="flex px-6">
             {STEPS.map((s) => (
@@ -253,6 +267,15 @@ export function SetupPage() {
             markHowToPlaySeen();
             setShowHowToPlay(false);
           }}
+        />
+      ) : null}
+
+      {showScoreboard ? (
+        <ScoreboardModal
+          players={players}
+          scoreboard={scoreboard}
+          onReset={resetScoreboard}
+          onClose={() => setShowScoreboard(false)}
         />
       ) : null}
     </ScreenLayout>

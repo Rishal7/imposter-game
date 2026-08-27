@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { assignRound, determineOutcome, tallyVotes } from './gameEngine';
+import { assignRound, determineOutcome, recordRoundInScoreboard, tallyVotes } from './gameEngine';
 import type { RandomSource } from './random';
-import type { GameSettings, Player } from './types';
+import type { GameSettings, Player, RoundAssignment } from './types';
 import { StaticWordProvider } from './wordProvider';
 
 /** Replays a fixed sequence of `nextInt` results so tests are deterministic. */
@@ -210,5 +210,58 @@ describe('determineOutcome', () => {
     expect(determineOutcome('p1', ['p3']).imposterCaught).toBe(false);
     expect(determineOutcome(null, ['p3']).imposterCaught).toBe(false);
     expect(determineOutcome('p2', ['p1', 'p2']).imposterCaught).toBe(true);
+  });
+});
+
+describe('recordRoundInScoreboard', () => {
+  const round: RoundAssignment = {
+    categoryId: 'food',
+    categoryName: 'Food',
+    secretWord: 'Pizza',
+    imposterIds: ['p3'],
+    roles: new Map(),
+  };
+
+  it('credits every player a round played, the imposter a catch, and correct voters', () => {
+    const outcome = determineOutcome('p3', ['p3']);
+    const votes = [
+      { voterId: 'p1', targetId: 'p3' },
+      { voterId: 'p2', targetId: 'p3' },
+      { voterId: 'p3', targetId: 'p1' },
+    ];
+
+    const scoreboard = recordRoundInScoreboard(new Map(), players, round, outcome, votes);
+
+    expect(scoreboard.get('p1')).toMatchObject({ roundsPlayed: 1, timesVotedCorrectly: 1 });
+    expect(scoreboard.get('p2')).toMatchObject({ roundsPlayed: 1, timesVotedCorrectly: 1 });
+    expect(scoreboard.get('p3')).toMatchObject({
+      roundsPlayed: 1,
+      timesImposter: 1,
+      timesCaughtAsImposter: 1,
+      timesEscapedAsImposter: 0,
+      timesVotedCorrectly: 0,
+    });
+  });
+
+  it('credits the imposter an escape when not caught, with no incorrect voter getting credit', () => {
+    const outcome = determineOutcome('p1', ['p3']);
+    const votes = [{ voterId: 'p2', targetId: 'p1' }];
+
+    const scoreboard = recordRoundInScoreboard(new Map(), players, round, outcome, votes);
+
+    expect(scoreboard.get('p3')).toMatchObject({ timesCaughtAsImposter: 0, timesEscapedAsImposter: 1 });
+    expect(scoreboard.get('p2')?.timesVotedCorrectly).toBe(0);
+  });
+
+  it('accumulates across multiple rounds instead of overwriting', () => {
+    const firstOutcome = determineOutcome('p3', ['p3']);
+    const afterFirst = recordRoundInScoreboard(new Map(), players, round, firstOutcome, []);
+
+    const secondRound: RoundAssignment = { ...round, imposterIds: ['p1'] };
+    const secondOutcome = determineOutcome(null, ['p1']);
+    const afterSecond = recordRoundInScoreboard(afterFirst, players, secondRound, secondOutcome, []);
+
+    expect(afterSecond.get('p1')).toMatchObject({ roundsPlayed: 2, timesImposter: 1, timesEscapedAsImposter: 1 });
+    expect(afterSecond.get('p3')).toMatchObject({ roundsPlayed: 2, timesImposter: 1, timesCaughtAsImposter: 1 });
   });
 });

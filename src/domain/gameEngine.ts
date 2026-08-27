@@ -87,3 +87,67 @@ export function determineOutcome(votedOutId: string | null, imposterIds: readonl
     imposterCaught: votedOutId !== null && imposterIds.includes(votedOutId),
   };
 }
+
+export interface PlayerScore {
+  readonly playerId: string;
+  readonly roundsPlayed: number;
+  readonly timesImposter: number;
+  readonly timesCaughtAsImposter: number;
+  readonly timesEscapedAsImposter: number;
+  readonly timesVotedCorrectly: number;
+}
+
+export type Scoreboard = ReadonlyMap<string, PlayerScore>;
+
+const emptyScore = (playerId: string): PlayerScore => ({
+  playerId,
+  roundsPlayed: 0,
+  timesImposter: 0,
+  timesCaughtAsImposter: 0,
+  timesEscapedAsImposter: 0,
+  timesVotedCorrectly: 0,
+});
+
+/**
+ * Folds one round's result into a running scoreboard for the night. Pure
+ * function returning a new map, so it's testable without touching the
+ * store. Imposter catch/escape credit is round-level (matching what the
+ * Result screen tells players — "Busted" or "Smooth move" — rather than
+ * a more granular per-imposter truth the UI never explains), so it stays
+ * consistent across both single- and two-imposter rounds, and across the
+ * honor system (which can't attribute a catch to one specific imposter).
+ */
+export function recordRoundInScoreboard(
+  scoreboard: Scoreboard,
+  players: readonly Player[],
+  round: RoundAssignment,
+  outcome: RoundOutcome,
+  votes: readonly Vote[],
+): Scoreboard {
+  const next = new Map(scoreboard);
+  const getOrCreate = (id: string): PlayerScore => next.get(id) ?? emptyScore(id);
+
+  for (const player of players) {
+    const current = getOrCreate(player.id);
+    next.set(player.id, { ...current, roundsPlayed: current.roundsPlayed + 1 });
+  }
+
+  for (const imposterId of round.imposterIds) {
+    const current = getOrCreate(imposterId);
+    next.set(imposterId, {
+      ...current,
+      timesImposter: current.timesImposter + 1,
+      timesCaughtAsImposter: current.timesCaughtAsImposter + (outcome.imposterCaught ? 1 : 0),
+      timesEscapedAsImposter: current.timesEscapedAsImposter + (outcome.imposterCaught ? 0 : 1),
+    });
+  }
+
+  for (const vote of votes) {
+    if (round.imposterIds.includes(vote.targetId)) {
+      const current = getOrCreate(vote.voterId);
+      next.set(vote.voterId, { ...current, timesVotedCorrectly: current.timesVotedCorrectly + 1 });
+    }
+  }
+
+  return next;
+}
