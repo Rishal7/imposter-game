@@ -170,6 +170,49 @@ describe('assignRound', () => {
     expect(round.secretWord).toBe('Only');
   });
 
+  it('steers away from a recent imposter when enough other players are eligible', () => {
+    const random = new SequenceRandomSource([0, 0, 0]);
+    const round = assignRound({
+      players,
+      categoryIds: ['food'],
+      settings: baseSettings,
+      wordProvider,
+      random,
+      excludeImposterIds: new Set(['p3']),
+    });
+
+    expect(round.imposterIds).toEqual(['p1']);
+  });
+
+  it('falls back to the full roster when every player is on cooldown', () => {
+    const random = new SequenceRandomSource([0, 0, 1]);
+    const round = assignRound({
+      players,
+      categoryIds: ['food'],
+      settings: baseSettings,
+      wordProvider,
+      random,
+      excludeImposterIds: new Set(['p1', 'p2', 'p3']),
+    });
+
+    expect(round.imposterIds).toHaveLength(1);
+  });
+
+  it('keeps both two-imposter picks off cooldown when exactly enough players are eligible', () => {
+    const random = new SequenceRandomSource([0, 1, 0, 0]);
+    const round = assignRound({
+      players: fivePlayers,
+      categoryIds: ['food'],
+      settings: { ...baseSettings, twoImposters: true },
+      wordProvider,
+      random,
+      excludeImposterIds: new Set(['p1', 'p2', 'p3']),
+    });
+
+    expect(round.imposterIds).toHaveLength(2);
+    expect(round.imposterIds).toEqual(expect.arrayContaining(['p4', 'p5']));
+  });
+
   it('stays at one imposter when twoImposters is enabled but there are too few players', () => {
     const random = new SequenceRandomSource([0, 0, 1]);
     const round = assignRound({

@@ -16,6 +16,24 @@ export interface AssignRoundParams {
   readonly random: RandomSource;
   /** Secret words to steer away from repeating — e.g. the last round or two. */
   readonly excludeWords?: ReadonlySet<string>;
+  /** Player ids to steer away from picking as imposter again — a recent-imposter cooldown. */
+  readonly excludeImposterIds?: ReadonlySet<string>;
+}
+
+/**
+ * Picks `count` distinct imposters, preferring players outside the
+ * cooldown set — but falls back to the full roster when too few players
+ * are eligible to supply `count` distinct picks, rather than throwing.
+ */
+function pickImposters(
+  players: readonly Player[],
+  count: number,
+  random: RandomSource,
+  excludeIds: ReadonlySet<string>,
+): Player[] {
+  const eligible = players.filter((player) => !excludeIds.has(player.id));
+  const pool = eligible.length >= count ? eligible : players;
+  return pickDistinct(pool, count, random);
 }
 
 /**
@@ -25,7 +43,7 @@ export interface AssignRoundParams {
  * be unit tested without mocking modules.
  */
 export function assignRound(params: AssignRoundParams): RoundAssignment {
-  const { players, categoryIds, settings, wordProvider, random, excludeWords } = params;
+  const { players, categoryIds, settings, wordProvider, random, excludeWords, excludeImposterIds } = params;
 
   if (players.length < MIN_PLAYERS) {
     throw new Error(`A round needs at least ${MIN_PLAYERS} players.`);
@@ -37,7 +55,7 @@ export function assignRound(params: AssignRoundParams): RoundAssignment {
   const categoryForImposter = settings.imposterSeesCategory ? category.name : null;
 
   const imposterCount = settings.twoImposters && players.length >= MIN_PLAYERS_FOR_TWO_IMPOSTERS ? 2 : 1;
-  const imposters = pickDistinct(players, imposterCount, random);
+  const imposters = pickImposters(players, imposterCount, random, excludeImposterIds ?? new Set());
   const imposterIds = imposters.map((player) => player.id);
 
   const roles = new Map<string, PlayerRole>(

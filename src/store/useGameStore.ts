@@ -26,6 +26,11 @@ const CATEGORIES = new StaticWordProvider().getCategories();
 const DEFAULT_SELECTED_CATEGORY_IDS = CATEGORIES.slice(0, 3).map((category) => category.id);
 /** How many past secret words a new round steers away from repeating. */
 const RECENT_WORDS_LIMIT = 3;
+/** From this many players up, the imposter cooldown extends to two rounds instead of one. */
+const IMPOSTER_COOLDOWN_BOOST_THRESHOLD = 4;
+const MAX_IMPOSTER_COOLDOWN_ROUNDS = 2;
+const imposterCooldownRounds = (playerCount: number): number =>
+  playerCount >= IMPOSTER_COOLDOWN_BOOST_THRESHOLD ? 2 : 1;
 
 let nextPlayerId = 0;
 const createPlayerId = (): string => `player-${(nextPlayerId += 1)}`;
@@ -60,6 +65,12 @@ interface GameState {
   readonly outcome: RoundOutcome | null;
   /** The last few secret words drawn, so a new round can steer away from repeats. Not persisted. */
   readonly recentWords: readonly string[];
+  /**
+   * Imposter id(s) from the last couple of rounds — never more than the
+   * largest cooldown window needs — so a new round can steer away from
+   * repeating the same imposter too soon. Not persisted.
+   */
+  readonly recentImposterRounds: readonly (readonly string[])[];
   /** Running tally for the night — folded in after every round's outcome. Not persisted. */
   readonly scoreboard: Scoreboard;
 
@@ -103,6 +114,7 @@ const createGameState: StateCreator<GameState> = (set, get) => ({
   voteView: 'ballot',
   outcome: null,
   recentWords: [],
+  recentImposterRounds: [],
   scoreboard: new Map(),
 
   addPlayer: () =>
@@ -161,8 +173,10 @@ const createGameState: StateCreator<GameState> = (set, get) => ({
     set((state) => ({ settings: { ...state.settings, twoImposters: !state.settings.twoImposters } })),
 
   startGame: () => {
-    const { players, selectedCategoryIds, customCategories, settings, recentWords } = get();
+    const { players, selectedCategoryIds, customCategories, settings, recentWords, recentImposterRounds } = get();
     const wordProvider = new StaticWordProvider([...CATEGORIES, ...customCategories]);
+    const cooldown = imposterCooldownRounds(players.length);
+    const excludeImposterIds = new Set(recentImposterRounds.slice(-cooldown).flat());
     const round = assignRound({
       players,
       categoryIds: selectedCategoryIds,
@@ -170,6 +184,7 @@ const createGameState: StateCreator<GameState> = (set, get) => ({
       wordProvider,
       random,
       excludeWords: new Set(recentWords),
+      excludeImposterIds,
     });
     set({
       phase: 'reveal',
@@ -179,6 +194,7 @@ const createGameState: StateCreator<GameState> = (set, get) => ({
       voteView: 'ballot',
       outcome: null,
       recentWords: [...recentWords, round.secretWord].slice(-RECENT_WORDS_LIMIT),
+      recentImposterRounds: [...recentImposterRounds, round.imposterIds].slice(-MAX_IMPOSTER_COOLDOWN_ROUNDS),
     });
   },
 
