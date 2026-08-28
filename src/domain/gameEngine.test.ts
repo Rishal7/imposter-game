@@ -47,6 +47,26 @@ const wordProvider = new StaticWordProvider([
   },
 ]);
 
+const multiCategoryProvider = new StaticWordProvider([
+  {
+    id: 'food',
+    name: 'Food',
+    words: [
+      { word: 'Pizza', hint: 'Italian' },
+      { word: 'Sushi', hint: 'Japanese' },
+      { word: 'Tacos', hint: 'Mexican' },
+    ],
+  },
+  {
+    id: 'colors',
+    name: 'Colors',
+    words: [
+      { word: 'Red', hint: 'Warm' },
+      { word: 'Blue', hint: 'Cool' },
+    ],
+  },
+]);
+
 describe('assignRound', () => {
   it('gives exactly one imposter and the rest the same civilian word', () => {
     const random = new SequenceRandomSource([0, 0, 1]);
@@ -168,6 +188,74 @@ describe('assignRound', () => {
     });
 
     expect(round.secretWord).toBe('Only');
+  });
+
+  it('steers away from the last category when another selected one is available', () => {
+    const random = new SequenceRandomSource([0, 0, 0]);
+    const round = assignRound({
+      players,
+      categoryIds: ['food', 'colors'],
+      settings: baseSettings,
+      wordProvider: multiCategoryProvider,
+      random,
+      excludeCategoryIds: new Set(['food']),
+    });
+
+    expect(round.categoryId).toBe('colors');
+  });
+
+  it('falls back to the only selected category even if it is excluded', () => {
+    const random = new SequenceRandomSource([0, 0, 0]);
+    const round = assignRound({
+      players,
+      categoryIds: ['food'],
+      settings: baseSettings,
+      wordProvider: multiCategoryProvider,
+      random,
+      excludeCategoryIds: new Set(['food']),
+    });
+
+    expect(round.categoryId).toBe('food');
+  });
+
+  it('prefers the player with the fewest imposter turns so far this session', () => {
+    const random = new SequenceRandomSource([0, 0, 0]);
+    const imposterCounts = new Map([
+      ['p1', 3],
+      ['p2', 0],
+      ['p3', 2],
+    ]);
+    const round = assignRound({
+      players,
+      categoryIds: ['food'],
+      settings: baseSettings,
+      wordProvider,
+      random,
+      imposterCounts,
+    });
+
+    expect(round.imposterIds).toEqual(['p2']);
+  });
+
+  it('falls back to the wider pool when too few players share the fewest imposter count', () => {
+    const random = new SequenceRandomSource([0, 1, 0, 0]);
+    const imposterCounts = new Map([
+      ['p1', 0],
+      ['p2', 5],
+      ['p3', 5],
+      ['p4', 5],
+      ['p5', 5],
+    ]);
+    const round = assignRound({
+      players: fivePlayers,
+      categoryIds: ['food'],
+      settings: { ...baseSettings, twoImposters: true },
+      wordProvider,
+      random,
+      imposterCounts,
+    });
+
+    expect(round.imposterIds).toEqual(['p1', 'p2']);
   });
 
   it('steers away from a recent imposter when enough other players are eligible', () => {

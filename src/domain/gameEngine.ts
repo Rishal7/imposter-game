@@ -16,23 +16,36 @@ export interface AssignRoundParams {
   readonly random: RandomSource;
   /** Secret words to steer away from repeating — e.g. the last round or two. */
   readonly excludeWords?: ReadonlySet<string>;
+  /** Category ids to steer away from repeating — e.g. the last round's category. */
+  readonly excludeCategoryIds?: ReadonlySet<string>;
   /** Player ids to steer away from picking as imposter again — a recent-imposter cooldown. */
   readonly excludeImposterIds?: ReadonlySet<string>;
+  /** How many times each player has already been imposter this session, for long-run fairness. */
+  readonly imposterCounts?: ReadonlyMap<string, number>;
 }
 
 /**
- * Picks `count` distinct imposters, preferring players outside the
- * cooldown set — but falls back to the full roster when too few players
- * are eligible to supply `count` distinct picks, rather than throwing.
+ * Picks `count` distinct imposters. First narrows to players outside the
+ * cooldown set (falling back to the full roster when too few are
+ * eligible), then narrows further to whoever's been imposter the fewest
+ * times this session — so short-term variety and long-run fairness both
+ * apply, without either one ever blocking a round from starting.
  */
 function pickImposters(
   players: readonly Player[],
   count: number,
   random: RandomSource,
   excludeIds: ReadonlySet<string>,
+  imposterCounts: ReadonlyMap<string, number>,
 ): Player[] {
   const eligible = players.filter((player) => !excludeIds.has(player.id));
-  const pool = eligible.length >= count ? eligible : players;
+  const cooldownPool = eligible.length >= count ? eligible : players;
+
+  const countFor = (player: Player): number => imposterCounts.get(player.id) ?? 0;
+  const fewestTurns = Math.min(...cooldownPool.map(countFor));
+  const fairestPool = cooldownPool.filter((player) => countFor(player) === fewestTurns);
+  const pool = fairestPool.length >= count ? fairestPool : cooldownPool;
+
   return pickDistinct(pool, count, random);
 }
 
@@ -43,19 +56,35 @@ function pickImposters(
  * be unit tested without mocking modules.
  */
 export function assignRound(params: AssignRoundParams): RoundAssignment {
-  const { players, categoryIds, settings, wordProvider, random, excludeWords, excludeImposterIds } = params;
+  const {
+    players,
+    categoryIds,
+    settings,
+    wordProvider,
+    random,
+    excludeWords,
+    excludeCategoryIds,
+    excludeImposterIds,
+    imposterCounts,
+  } = params;
 
   if (players.length < MIN_PLAYERS) {
     throw new Error(`A round needs at least ${MIN_PLAYERS} players.`);
   }
 
-  const { category, entry } = wordProvider.pickSecretWord(categoryIds, random, excludeWords);
+  const { category, entry } = wordProvider.pickSecretWord(categoryIds, random, excludeWords, excludeCategoryIds);
   const word = entry.word;
   const hintWord = settings.imposterGetsHint ? entry.hint : null;
   const categoryForImposter = settings.imposterSeesCategory ? category.name : null;
 
   const imposterCount = settings.twoImposters && players.length >= MIN_PLAYERS_FOR_TWO_IMPOSTERS ? 2 : 1;
-  const imposters = pickImposters(players, imposterCount, random, excludeImposterIds ?? new Set());
+  const imposters = pickImposters(
+    players,
+    imposterCount,
+    random,
+    excludeImposterIds ?? new Set(),
+    imposterCounts ?? new Map(),
+  );
   const imposterIds = imposters.map((player) => player.id);
 
   const roles = new Map<string, PlayerRole>(
