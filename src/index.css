@@ -30,16 +30,16 @@
    * of a near-black one.
    */
   :root[data-theme='light'] {
-    --color-bg: oklch(97% 0.006 255);
-    --color-surface: oklch(93% 0.008 255);
-    --color-surface-2: oklch(89% 0.01 255);
-    --color-line: oklch(50% 0.03 255);
-    --color-text: oklch(20% 0.02 255);
-    --color-text-dim: oklch(46% 0.02 255);
-    --color-primary: oklch(52% 0.15 195);
-    --color-primary-ink: oklch(98% 0.01 195);
-    --color-danger: oklch(52% 0.2 345);
-    --color-accent: oklch(48% 0.16 130);
+    --color-bg: oklch(98.5% 0.004 255);
+    --color-surface: oklch(95% 0.008 255);
+    --color-surface-2: oklch(90.5% 0.012 255);
+    --color-line: oklch(42% 0.035 255);
+    --color-text: oklch(13% 0.018 255);
+    --color-text-dim: oklch(40% 0.022 255);
+    --color-primary: oklch(46% 0.15 195);
+    --color-primary-ink: oklch(99% 0.006 195);
+    --color-danger: oklch(46% 0.2 345);
+    --color-accent: oklch(40% 0.15 130);
     color-scheme: light;
   }
 

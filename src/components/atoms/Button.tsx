@@ -9,8 +9,10 @@ interface ButtonProps extends ComponentPropsWithRef<'button'> {
 }
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
-  primary: 'bg-primary text-primary-ink disabled:bg-surface-2 disabled:text-text-dim',
-  danger: 'bg-danger text-primary-ink disabled:bg-surface-2 disabled:text-text-dim',
+  primary:
+    'bg-primary text-primary-ink shadow-[0_14px_28px_-14px_oklch(from_var(--color-primary)_l_c_h_/_0.4)] disabled:bg-surface-2 disabled:text-text-dim disabled:shadow-none',
+  danger:
+    'bg-danger text-primary-ink shadow-[0_14px_28px_-14px_oklch(from_var(--color-danger)_l_c_h_/_0.4)] disabled:bg-surface-2 disabled:text-text-dim disabled:shadow-none',
   ghost: 'bg-transparent text-text ring-1 ring-inset ring-line/40',
 };
 
