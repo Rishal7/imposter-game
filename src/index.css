@@ -21,6 +21,28 @@
     color-scheme: dark;
   }
 
+  /*
+   * Light theme override. Primary/danger/accent are noticeably darker
+   * here than their dark-theme values above — those tokens double as
+   * plain text color directly on `bg` in a lot of places (section
+   * labels, the secret word, vote tallies), not just button fills, so
+   * they need to hold contrast against a near-white background instead
+   * of a near-black one.
+   */
+  :root[data-theme='light'] {
+    --color-bg: oklch(97% 0.006 255);
+    --color-surface: oklch(93% 0.008 255);
+    --color-surface-2: oklch(89% 0.01 255);
+    --color-line: oklch(50% 0.03 255);
+    --color-text: oklch(20% 0.02 255);
+    --color-text-dim: oklch(46% 0.02 255);
+    --color-primary: oklch(52% 0.15 195);
+    --color-primary-ink: oklch(98% 0.01 195);
+    --color-danger: oklch(52% 0.2 345);
+    --color-accent: oklch(48% 0.16 130);
+    color-scheme: light;
+  }
+
   body {
     @apply bg-bg text-text font-body;
     overscroll-behavior-y: none;

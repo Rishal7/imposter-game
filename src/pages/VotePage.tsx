@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { BackLink } from '@/components/atoms/BackLink';
 import { BrandMark } from '@/components/atoms/BrandMark';
 import { Button } from '@/components/atoms/Button';
+import { ThemeToggle } from '@/components/atoms/ThemeToggle';
 import { BallotList } from '@/components/organisms/BallotList';
 import { HonorConfirm } from '@/components/organisms/HonorConfirm';
 import { PlayerTicketList } from '@/components/organisms/PlayerTicketList';
@@ -31,7 +32,10 @@ export function VotePage() {
         header={
           <div className="flex items-center justify-between px-6">
             <BackLink label="Back to voting" onClick={() => setVoteView('ballot')} />
-            <BrandMark size={26} />
+            <div className="flex items-center gap-3">
+              <ThemeToggle />
+              <BrandMark size={26} />
+            </div>
           </div>
         }
       >
@@ -79,8 +83,11 @@ export function VotePage() {
         header={
           <div className="flex items-center justify-between px-6">
             <BackLink onClick={() => setView({ kind: 'list' })} />
-            <div className="font-display text-xs font-bold uppercase tracking-widest text-text-dim">
-              {getPlayerDisplayName(voter, voterIndex)}
+            <div className="flex items-center gap-3">
+              <ThemeToggle />
+              <div className="font-display text-xs font-bold uppercase tracking-widest text-text-dim">
+                {getPlayerDisplayName(voter, voterIndex)}
+              </div>
             </div>
           </div>
         }
@@ -113,7 +120,10 @@ export function VotePage() {
       header={
         <div className="flex items-center justify-between px-6">
           <BackLink onClick={goToDiscuss} />
-          <BrandMark size={26} />
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <BrandMark size={26} />
+          </div>
         </div>
       }
       primaryAction={

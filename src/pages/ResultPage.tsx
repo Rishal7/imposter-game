@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { BrandMark } from '@/components/atoms/BrandMark';
 import { Button } from '@/components/atoms/Button';
+import { ThemeToggle } from '@/components/atoms/ThemeToggle';
 import { RestartIcon } from '@/components/icons';
 import { TallyList } from '@/components/organisms/TallyList';
 import { ScreenLayout } from '@/components/templates/ScreenLayout';
@@ -50,8 +51,9 @@ export function ResultPage() {
     return (
       <ScreenLayout
         header={
-          <div className="px-6">
+          <div className="flex items-center justify-between px-6">
             <BrandMark size={26} />
+            <ThemeToggle />
           </div>
         }
         primaryAction={
@@ -81,8 +83,9 @@ export function ResultPage() {
   return (
     <ScreenLayout
       header={
-        <div className="px-6">
+        <div className="flex items-center justify-between px-6">
           <BrandMark size={26} />
+          <ThemeToggle />
         </div>
       }
       primaryAction={

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { BackLink } from '@/components/atoms/BackLink';
 import { BrandMark } from '@/components/atoms/BrandMark';
 import { Button } from '@/components/atoms/Button';
+import { ThemeToggle } from '@/components/atoms/ThemeToggle';
 import { PeekModal } from '@/components/organisms/PeekModal';
 import { PlayerTicketList } from '@/components/organisms/PlayerTicketList';
 import { ScreenLayout } from '@/components/templates/ScreenLayout';
@@ -37,7 +38,10 @@ export function RevealPage() {
       header={
         <div className="flex items-center justify-between px-6">
           <BackLink label="Back to setup" onClick={backToSetup} />
-          <BrandMark size={26} />
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <BrandMark size={26} />
+          </div>
         </div>
       }
       primaryAction={

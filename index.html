@@ -6,6 +6,25 @@
     <meta name="theme-color" content="#0a0d14" />
     <meta name="description" content="Imposter — a pass-and-play social deduction party game. One player gets no word. Find them before the round ends." />
 
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('imposter:theme');
+          var theme =
+            stored === 'light' || stored === 'dark'
+              ? stored
+              : window.matchMedia('(prefers-color-scheme: light)').matches
+                ? 'light'
+                : 'dark';
+          document.documentElement.setAttribute('data-theme', theme);
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.setAttribute('content', theme === 'light' ? '#f6f7f9' : '#0a0d14');
+        } catch (e) {
+          // Storage/matchMedia unavailable — falls back to the default dark theme.
+        }
+      })();
+    </script>
+
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/icons/icon-192.png" />
 

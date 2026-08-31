@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { BrandMark } from '@/components/atoms/BrandMark';
 import { Button } from '@/components/atoms/Button';
+import { ThemeToggle } from '@/components/atoms/ThemeToggle';
 import { ArrowRightIcon, DownloadIcon, InfoIcon, PlayIcon, ShareIcon, TrophyIcon } from '@/components/icons';
 import { ConfirmDialog } from '@/components/molecules/ConfirmDialog';
 import { InstallNudge } from '@/components/molecules/InstallNudge';
@@ -78,6 +79,7 @@ export function SetupPage() {
               <div className="font-display text-sm font-extrabold tracking-wide">IMPOSTER</div>
             </div>
             <div className="flex items-center gap-1">
+              <ThemeToggle />
               <button
                 type="button"
                 onClick={() => setShowScoreboard(true)}

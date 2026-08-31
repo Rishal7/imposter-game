@@ -1,6 +1,7 @@
 import { BackLink } from '@/components/atoms/BackLink';
 import { BrandMark } from '@/components/atoms/BrandMark';
 import { Button } from '@/components/atoms/Button';
+import { ThemeToggle } from '@/components/atoms/ThemeToggle';
 import { CheckIcon } from '@/components/icons';
 import { ScreenLayout } from '@/components/templates/ScreenLayout';
 import { useGameStore } from '@/store/useGameStore';
@@ -15,7 +16,10 @@ export function DiscussPage() {
       header={
         <div className="flex items-center justify-between px-6">
           <BackLink onClick={goToReveal} />
-          <BrandMark size={26} />
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <BrandMark size={26} />
+          </div>
         </div>
       }
       primaryAction={
