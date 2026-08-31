@@ -2,7 +2,15 @@ import type { ReactNode } from 'react';
 
 interface ScreenLayoutProps {
   header?: ReactNode;
-  footer?: ReactNode;
+  /** The screen's single primary call-to-action button, if it has one. */
+  primaryAction?: ReactNode;
+  /**
+   * Optional link or helper text below the primary action. Its slot is
+   * always reserved at a fixed height — present or not — so the primary
+   * action itself sits at the same distance from the bottom on every
+   * screen, and switching screens never shows it jump.
+   */
+  secondaryAction?: ReactNode;
   children: ReactNode;
 }
 
@@ -17,7 +25,7 @@ interface ScreenLayoutProps {
  * a vignette backdrop, since a single-column, pass-the-device game reads
  * as an app on a wide desktop viewport, not a webpage stretched to fit it.
  */
-export function ScreenLayout({ header, footer, children }: ScreenLayoutProps) {
+export function ScreenLayout({ header, primaryAction, secondaryAction, children }: ScreenLayoutProps) {
   return (
     <div className="flex min-h-dvh justify-center bg-bg lg:items-center lg:bg-[radial-gradient(ellipse_120%_100%_at_50%_-10%,_var(--color-surface),_var(--color-bg)_70%)] lg:p-8">
       <div
@@ -27,7 +35,14 @@ export function ScreenLayout({ header, footer, children }: ScreenLayoutProps) {
       >
         {header ? <div className="pt-safe shrink-0">{header}</div> : null}
         <div className="no-scrollbar flex-1 overflow-y-auto">{children}</div>
-        <div className="pb-safe shrink-0 px-6 pt-3">{footer}</div>
+        <div className="pb-safe shrink-0 px-6 pt-3">
+          {primaryAction ? (
+            <div className="flex flex-col items-center gap-2.5">
+              {primaryAction}
+              <div className="flex h-5 items-center justify-center">{secondaryAction}</div>
+            </div>
+          ) : null}
+        </div>
       </div>
     </div>
   );

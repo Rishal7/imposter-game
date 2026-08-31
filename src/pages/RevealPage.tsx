@@ -40,14 +40,14 @@ export function RevealPage() {
           <BrandMark size={26} />
         </div>
       }
-      footer={
-        <div className="flex flex-col items-center gap-2">
-          <Button onClick={goToDiscuss} disabled={!allRevealed}>
-            Continue to discussion
-          </Button>
-          <div className="text-xs text-text-dim">
-            {revealedPlayerIds.size} of {players.length} peeked
-          </div>
+      primaryAction={
+        <Button onClick={goToDiscuss} disabled={!allRevealed}>
+          Continue to discussion
+        </Button>
+      }
+      secondaryAction={
+        <div className="text-xs text-text-dim">
+          {revealedPlayerIds.size} of {players.length} peeked
         </div>
       }
     >

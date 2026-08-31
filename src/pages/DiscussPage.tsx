@@ -18,16 +18,16 @@ export function DiscussPage() {
           <BrandMark size={26} />
         </div>
       }
-      footer={
-        <div className="flex flex-col items-center gap-3.5">
-          <Button onClick={goToVote}>
-            <CheckIcon width={16} height={16} strokeWidth={2.4} />
-            Ready to vote
-          </Button>
-          <button type="button" onClick={skipVoting} className="text-[13px] font-semibold text-text-dim">
-            Skip voting
-          </button>
-        </div>
+      primaryAction={
+        <Button onClick={goToVote}>
+          <CheckIcon width={16} height={16} strokeWidth={2.4} />
+          Ready to vote
+        </Button>
+      }
+      secondaryAction={
+        <button type="button" onClick={skipVoting} className="text-[13px] font-semibold text-text-dim">
+          Skip voting
+        </button>
       }
     >
       <div className="flex h-full flex-col items-center justify-center gap-6 px-9 text-center">

@@ -115,27 +115,25 @@ export function SetupPage() {
           </div>
         </div>
       }
-      footer={
+      primaryAction={
         step === 1 ? (
           <Button onClick={() => setStep(2)}>
             Next
             <ArrowRightIcon width={15} height={15} strokeWidth={2.4} />
           </Button>
         ) : (
-          <div className="flex flex-col gap-2.5">
-            <Button onClick={startGame} disabled={!canStart}>
-              <PlayIcon width={15} height={15} />
-              Start Game
-            </Button>
-            <button
-              type="button"
-              onClick={() => setStep(1)}
-              className="text-center text-[13px] font-semibold text-text-dim"
-            >
-              ← Back to crew
-            </button>
-          </div>
+          <Button onClick={startGame} disabled={!canStart}>
+            <PlayIcon width={15} height={15} />
+            Start Game
+          </Button>
         )
+      }
+      secondaryAction={
+        step === 2 ? (
+          <button type="button" onClick={() => setStep(1)} className="text-[13px] font-semibold text-text-dim">
+            ← Back to crew
+          </button>
+        ) : undefined
       }
     >
       {showIosInstallNudge ? (

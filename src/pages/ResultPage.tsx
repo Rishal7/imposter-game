@@ -54,7 +54,7 @@ export function ResultPage() {
             <BrandMark size={26} />
           </div>
         }
-        footer={
+        primaryAction={
           <Button
             variant="danger"
             onClick={() => {
@@ -85,16 +85,16 @@ export function ResultPage() {
           <BrandMark size={26} />
         </div>
       }
-      footer={
-        <div className="flex flex-col items-center gap-2.5">
-          <Button onClick={playAgain}>
-            <RestartIcon width={15} height={15} />
-            Play again
-          </Button>
-          <button type="button" onClick={backToSetup} className="text-[13px] font-semibold text-text-dim">
-            Back to setup
-          </button>
-        </div>
+      primaryAction={
+        <Button onClick={playAgain}>
+          <RestartIcon width={15} height={15} />
+          Play again
+        </Button>
+      }
+      secondaryAction={
+        <button type="button" onClick={backToSetup} className="text-[13px] font-semibold text-text-dim">
+          Back to setup
+        </button>
       }
     >
       <div className="flex flex-col gap-6 px-6 pb-2 pt-5">

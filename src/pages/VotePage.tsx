@@ -84,7 +84,7 @@ export function VotePage() {
             </div>
           </div>
         }
-        footer={
+        primaryAction={
           <Button
             variant="danger"
             disabled={!selectedTargetId}
@@ -116,15 +116,15 @@ export function VotePage() {
           <BrandMark size={26} />
         </div>
       }
-      footer={
-        <div className="flex flex-col items-center gap-3">
-          <Button variant="danger" onClick={finishVoting} disabled={!allVoted}>
-            See results
-          </Button>
-          <button type="button" onClick={() => setVoteView('honor')} className="text-[13px] font-semibold text-text-dim">
-            Prefer to decide out loud? <span className="font-bold text-primary">Skip →</span>
-          </button>
-        </div>
+      primaryAction={
+        <Button variant="danger" onClick={finishVoting} disabled={!allVoted}>
+          See results
+        </Button>
+      }
+      secondaryAction={
+        <button type="button" onClick={() => setVoteView('honor')} className="text-[13px] font-semibold text-text-dim">
+          Prefer to decide out loud? <span className="font-bold text-primary">Skip →</span>
+        </button>
       }
     >
       <div className="flex flex-col gap-1 px-6 pb-2 pt-5">
