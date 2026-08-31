@@ -4,6 +4,7 @@ import { Avatar } from '@/components/atoms/Avatar';
 import { Button } from '@/components/atoms/Button';
 import { XIcon } from '@/components/icons';
 import { ConfirmDialog } from '@/components/molecules/ConfirmDialog';
+import { ScreenLayout } from '@/components/templates/ScreenLayout';
 import type { PlayerScore, Scoreboard } from '@/domain/gameEngine';
 import type { Player } from '@/domain/types';
 import { getPlayerDisplayName } from '@/store/useGameStore';
@@ -46,16 +47,29 @@ export function ScoreboardModal({ players, scoreboard, onReset, onClose }: Score
   const hasPlayed = rows.some((row) => row.score.roundsPlayed > 0);
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-center bg-bg/96 backdrop-blur-sm lg:items-center lg:bg-[radial-gradient(ellipse_120%_100%_at_50%_-10%,_var(--color-surface),_var(--color-bg)_70%)] lg:p-8">
-      <div className="flex h-dvh w-full max-w-md flex-col overflow-hidden bg-bg sm:max-w-lg md:max-w-2xl lg:h-[min(860px,90dvh)] lg:cut lg:cut-lg lg:border lg:border-line/20 lg:shadow-[0_50px_120px_-40px_rgba(0,0,0,0.7)]">
-        <div className="flex items-center justify-between px-6 pt-6 pb-2">
-          <span className="font-display text-xs font-bold uppercase tracking-widest text-text-dim">Scoreboard</span>
-          <button type="button" onClick={onClose} aria-label="Close" className="p-1 text-text-dim">
-            <XIcon width={16} height={16} strokeWidth={2.4} />
+    <div className="fixed inset-0 z-50">
+      <ScreenLayout
+        header={
+          <div className="flex items-center justify-between px-6 pb-2">
+            <span className="font-display text-xs font-bold uppercase tracking-widest text-text-dim">Scoreboard</span>
+            <button type="button" onClick={onClose} aria-label="Close" className="p-1 text-text-dim">
+              <XIcon width={16} height={16} strokeWidth={2.4} />
+            </button>
+          </div>
+        }
+        primaryAction={<Button onClick={onClose}>Close</Button>}
+        secondaryAction={
+          <button
+            type="button"
+            onClick={() => setConfirmingReset(true)}
+            disabled={!hasPlayed}
+            className="text-[13px] font-semibold text-text-dim disabled:opacity-40"
+          >
+            Reset scoreboard
           </button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto px-6 pt-3 pb-4">
+        }
+      >
+        <div className="px-6 pt-3 pb-4">
           {hasPlayed ? (
             <div className="flex flex-col">
               {rows.map((row, rank) => (
@@ -84,14 +98,7 @@ export function ScoreboardModal({ players, scoreboard, onReset, onClose }: Score
             </p>
           )}
         </div>
-
-        <div className="flex flex-col gap-2.5 px-6 pt-2 pb-6">
-          <Button variant="ghost" onClick={() => setConfirmingReset(true)} disabled={!hasPlayed}>
-            Reset scoreboard
-          </Button>
-          <Button onClick={onClose}>Close</Button>
-        </div>
-      </div>
+      </ScreenLayout>
 
       {confirmingReset ? (
         <ConfirmDialog

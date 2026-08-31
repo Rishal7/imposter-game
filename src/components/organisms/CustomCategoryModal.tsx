@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Button } from '@/components/atoms/Button';
 import { PlusIcon, XIcon } from '@/components/icons';
 import { WordPairRow } from '@/components/molecules/WordPairRow';
+import { ScreenLayout } from '@/components/templates/ScreenLayout';
 import type { Category, WordEntry } from '@/domain/types';
 
 interface DraftRow {
@@ -37,18 +38,32 @@ export function CustomCategoryModal({ initialCategory, onSave, onClose }: Custom
   const removeRow = (index: number) => setRows((current) => current.filter((_, i) => i !== index));
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-center bg-bg/96 backdrop-blur-sm lg:items-center lg:bg-[radial-gradient(ellipse_120%_100%_at_50%_-10%,_var(--color-surface),_var(--color-bg)_70%)] lg:p-8">
-      <div className="flex h-dvh w-full max-w-md flex-col overflow-hidden bg-bg sm:max-w-lg md:max-w-2xl lg:h-[min(860px,90dvh)] lg:cut lg:cut-lg lg:border lg:border-line/20 lg:shadow-[0_50px_120px_-40px_rgba(0,0,0,0.7)]">
-        <div className="flex items-center justify-between px-6 pt-6 pb-2">
-          <span className="font-display text-xs font-bold uppercase tracking-widest text-text-dim">
-            {isEditing ? 'Edit word pack' : 'New word pack'}
-          </span>
-          <button type="button" onClick={onClose} aria-label="Close" className="p-1 text-text-dim">
-            <XIcon width={16} height={16} strokeWidth={2.4} />
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto px-6 pt-3 pb-4">
+    <div className="fixed inset-0 z-50">
+      <ScreenLayout
+        header={
+          <div className="flex items-center justify-between px-6 pb-2">
+            <span className="font-display text-xs font-bold uppercase tracking-widest text-text-dim">
+              {isEditing ? 'Edit word pack' : 'New word pack'}
+            </span>
+            <button type="button" onClick={onClose} aria-label="Close" className="p-1 text-text-dim">
+              <XIcon width={16} height={16} strokeWidth={2.4} />
+            </button>
+          </div>
+        }
+        primaryAction={
+          <Button
+            disabled={!canSave}
+            onClick={() => {
+              if (!canSave) return;
+              onSave(name, validWords);
+              onClose();
+            }}
+          >
+            {isEditing ? 'Save changes' : 'Save pack'}
+          </Button>
+        }
+      >
+        <div className="px-6 pt-3 pb-4">
           <input
             value={name}
             onChange={(event) => setName(event.target.value)}
@@ -80,20 +95,7 @@ export function CustomCategoryModal({ initialCategory, onSave, onClose }: Custom
             Add word
           </button>
         </div>
-
-        <div className="px-6 pt-2 pb-6">
-          <Button
-            disabled={!canSave}
-            onClick={() => {
-              if (!canSave) return;
-              onSave(name, validWords);
-              onClose();
-            }}
-          >
-            {isEditing ? 'Save changes' : 'Save pack'}
-          </Button>
-        </div>
-      </div>
+      </ScreenLayout>
     </div>
   );
 }
