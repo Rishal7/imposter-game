@@ -46,46 +46,51 @@ export function ScoreboardModal({ players, scoreboard, onReset, onClose }: Score
   const hasPlayed = rows.some((row) => row.score.roundsPlayed > 0);
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-bg/96 backdrop-blur-sm">
-      <div className="flex items-center justify-between px-6 pt-6 pb-2">
-        <span className="font-display text-xs font-bold uppercase tracking-widest text-text-dim">Scoreboard</span>
-        <button type="button" onClick={onClose} aria-label="Close" className="p-1 text-text-dim">
-          <XIcon width={16} height={16} strokeWidth={2.4} />
-        </button>
-      </div>
+    <div className="fixed inset-0 z-50 flex justify-center bg-bg/96 backdrop-blur-sm">
+      <div className="flex w-full max-w-md flex-col sm:max-w-lg md:max-w-2xl">
+        <div className="flex items-center justify-between px-6 pt-6 pb-2">
+          <span className="font-display text-xs font-bold uppercase tracking-widest text-text-dim">Scoreboard</span>
+          <button type="button" onClick={onClose} aria-label="Close" className="p-1 text-text-dim">
+            <XIcon width={16} height={16} strokeWidth={2.4} />
+          </button>
+        </div>
 
-      <div className="flex-1 overflow-y-auto px-6 pt-3 pb-4">
-        {hasPlayed ? (
-          <div className="flex flex-col">
-            {rows.map((row, rank) => (
-              <div key={row.player.id} className="flex items-center gap-3 border-b border-dashed border-line/25 py-3">
-                <div className="font-display text-lg font-extrabold text-line/70 tabular-nums">
-                  {String(rank + 1).padStart(2, '0')}
-                </div>
-                <Avatar name={row.displayName} paletteIndex={row.paletteIndex} size="sm" />
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-[14px] font-bold text-text">{row.displayName}</div>
-                  <div className="text-[11px] text-text-dim">
-                    {row.score.roundsPlayed} round{row.score.roundsPlayed === 1 ? '' : 's'} ·{' '}
-                    {row.score.timesImposter}x imposter
+        <div className="flex-1 overflow-y-auto px-6 pt-3 pb-4">
+          {hasPlayed ? (
+            <div className="flex flex-col">
+              {rows.map((row, rank) => (
+                <div
+                  key={row.player.id}
+                  className="flex items-center gap-3 border-b border-dashed border-line/25 py-3"
+                >
+                  <div className="font-display text-lg font-extrabold text-line/70 tabular-nums">
+                    {String(rank + 1).padStart(2, '0')}
                   </div>
+                  <Avatar name={row.displayName} paletteIndex={row.paletteIndex} size="sm" />
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-[14px] font-bold text-text">{row.displayName}</div>
+                    <div className="text-[11px] text-text-dim">
+                      {row.score.roundsPlayed} round{row.score.roundsPlayed === 1 ? '' : 's'} ·{' '}
+                      {row.score.timesImposter}x imposter
+                    </div>
+                  </div>
+                  <div className="font-display text-lg font-extrabold text-primary tabular-nums">{row.points}</div>
                 </div>
-                <div className="font-display text-lg font-extrabold text-primary tabular-nums">{row.points}</div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="py-10 text-center text-[13px] leading-relaxed text-text-dim">
-            No rounds played yet tonight — points show up here after your first round ends.
-          </p>
-        )}
-      </div>
+              ))}
+            </div>
+          ) : (
+            <p className="py-10 text-center text-[13px] leading-relaxed text-text-dim">
+              No rounds played yet tonight — points show up here after your first round ends.
+            </p>
+          )}
+        </div>
 
-      <div className="flex flex-col gap-2.5 px-6 pt-2 pb-6">
-        <Button variant="ghost" onClick={() => setConfirmingReset(true)} disabled={!hasPlayed}>
-          Reset scoreboard
-        </Button>
-        <Button onClick={onClose}>Close</Button>
+        <div className="flex flex-col gap-2.5 px-6 pt-2 pb-6">
+          <Button variant="ghost" onClick={() => setConfirmingReset(true)} disabled={!hasPlayed}>
+            Reset scoreboard
+          </Button>
+          <Button onClick={onClose}>Close</Button>
+        </div>
       </div>
 
       {confirmingReset ? (

@@ -26,32 +26,34 @@ const STEPS: readonly { title: string; body: string }[] = [
 
 export function HowToPlayModal({ onClose }: HowToPlayModalProps) {
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-bg/96 backdrop-blur-sm">
-      <div className="flex items-center justify-between px-6 pt-6 pb-2">
-        <span className="font-display text-xs font-bold uppercase tracking-widest text-text-dim">How to play</span>
-        <button type="button" onClick={onClose} aria-label="Close" className="p-1 text-text-dim">
-          <XIcon width={16} height={16} strokeWidth={2.4} />
-        </button>
-      </div>
-
-      <div className="flex-1 overflow-y-auto px-6 pt-3 pb-4">
-        <div className="flex flex-col">
-          {STEPS.map((step, index) => (
-            <div key={step.title} className="flex gap-3.5 border-b border-dashed border-line/25 py-3.5">
-              <div className="font-display text-lg font-extrabold text-line/70 tabular-nums">
-                {String(index + 1).padStart(2, '0')}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="text-[14px] font-bold text-text">{step.title}</div>
-                <p className="mt-0.5 text-[13px] leading-relaxed text-text-dim">{step.body}</p>
-              </div>
-            </div>
-          ))}
+    <div className="fixed inset-0 z-50 flex justify-center bg-bg/96 backdrop-blur-sm">
+      <div className="flex w-full max-w-md flex-col sm:max-w-lg md:max-w-2xl">
+        <div className="flex items-center justify-between px-6 pt-6 pb-2">
+          <span className="font-display text-xs font-bold uppercase tracking-widest text-text-dim">How to play</span>
+          <button type="button" onClick={onClose} aria-label="Close" className="p-1 text-text-dim">
+            <XIcon width={16} height={16} strokeWidth={2.4} />
+          </button>
         </div>
-      </div>
 
-      <div className="px-6 pt-2 pb-6">
-        <Button onClick={onClose}>Got it</Button>
+        <div className="flex-1 overflow-y-auto px-6 pt-3 pb-4">
+          <div className="flex flex-col">
+            {STEPS.map((step, index) => (
+              <div key={step.title} className="flex gap-3.5 border-b border-dashed border-line/25 py-3.5">
+                <div className="font-display text-lg font-extrabold text-line/70 tabular-nums">
+                  {String(index + 1).padStart(2, '0')}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[14px] font-bold text-text">{step.title}</div>
+                  <p className="mt-0.5 text-[13px] leading-relaxed text-text-dim">{step.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="px-6 pt-2 pb-6">
+          <Button onClick={onClose}>Got it</Button>
+        </div>
       </div>
     </div>
   );
